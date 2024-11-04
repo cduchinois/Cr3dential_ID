@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
       holder: did,
       issuanceDate: new Date().toISOString(),
       expirationDate: new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 30 days from now
+        Date.now() + 365 * 24 * 60 * 60 * 1000
+      ).toISOString(), // 365 days from now
       status: "pending",
       fields: credentialOfferData[type],
     };
