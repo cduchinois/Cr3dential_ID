@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const router = useRouter();
-  router.push('/credential-app/credentials');
+  router.push('/credential-app/profile');
 
   return (
     <Stack flexGrow={1} alignItems='center'>
