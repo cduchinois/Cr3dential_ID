@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Alert,Box, Typography } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import QrScanner from 'qr-scanner';
-import { Box, Typography } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ScanPage() {
-  const [data, setData] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [qrScanner, setQrScanner] = useState<QrScanner | null>(null);
+  const [_, setQrScanner] = useState<QrScanner | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -15,9 +17,20 @@ export default function ScanPage() {
     const scanner = new QrScanner(
       videoRef.current,
       (result) => {
-        setData(result.data);
-        console.log('Scanned data:', result.data);
-        // Handle the QR code data here
+        try {
+          const url = new URL(result.data);
+
+          // Check if the URL path starts with /credential-request
+          if (!url.pathname.startsWith('/credential-app/credential-offer')) {
+            setError('Invalid credential request QR code');
+            return;
+          }
+
+          // Valid URL with correct path - navigate to the credential offer page
+          router.push(url.pathname + url.search);
+        } catch (err) {
+          setError('Invalid QR code: Please scan a valid URL');
+        }
       },
       {
         preferredCamera: 'environment',
@@ -32,7 +45,7 @@ export default function ScanPage() {
     return () => {
       scanner.destroy();
     };
-  }, []);
+  }, [router]);
 
   return (
     <Box
@@ -46,6 +59,12 @@ export default function ScanPage() {
       <Typography variant="h6" gutterBottom>
         Scan QR Code
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       <Box
         sx={{
@@ -64,12 +83,6 @@ export default function ScanPage() {
       >
         <video ref={videoRef} />
       </Box>
-
-      {data && (
-        <Typography sx={{ mt: 2 }}>
-          Scanned Result: {data}
-        </Typography>
-      )}
     </Box>
   );
 }
