@@ -8,6 +8,7 @@ import {
 import logo42 from "@/assets/423918.logowik.com.webp";
 import easyALogo from "@/assets/uBaka3Xr_400x400.jpg";
 import xrpLogo from "@/assets/xrp-xrp-logo-CBBF77A5CF-seeklogo.com.webp";
+import futureverseLogo from "@/assets/futureverse.png";
 
 export async function POST(request: NextRequest) {
   // Default images for different credential types
@@ -17,6 +18,7 @@ export async function POST(request: NextRequest) {
     "42-software-engineering": logo42,
     "easya-training": easyALogo,
     "xrpl-training": xrpLogo,
+    "futureverse-training-dev": futureverseLogo,
     default: `${request.nextUrl.origin}/images/default-credential.png`,
   };
 

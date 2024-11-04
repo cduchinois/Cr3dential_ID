@@ -18,7 +18,7 @@ function CredentialCard({ credential }: { credential: StoredCredential }) {
     const type = credential.type[credential.type.length - 1];
     return type
       .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
 
@@ -68,11 +68,13 @@ function CredentialCard({ credential }: { credential: StoredCredential }) {
             flexGrow: 1,
           }}
         >
-          <Typography>{credential.typeLabel || getCredentialName(credential)}</Typography>
+          <Typography>
+            {credential.typeLabel || getCredentialName(credential)}
+          </Typography>
           <Typography color='text.secondary'>
             {getIssuerName(credential.issuer)}
           </Typography>
-          <Typography variant="caption" color='text.secondary'>
+          <Typography variant='caption' color='text.secondary'>
             Issued: {new Date(credential.issuanceDate).toLocaleDateString()}
           </Typography>
           <CardActions

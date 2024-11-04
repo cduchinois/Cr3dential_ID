@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  Typography, 
+import {
+  Box,
+  Button,
+  Typography,
   CircularProgress,
   Alert,
   Chip,
@@ -86,15 +86,15 @@ export default function ClaimDID() {
       const decodedTest = bs58.decode(base58String);
       const decodedString = Buffer.from(decodedTest).toString('utf8');
       console.log('Decoded test:', decodedString);
-      
+
       console.log('Calling createDid with:', {
         address: userWallet.address,
         base58String: base58String
       });
-      
+
       const result = await createDid(userWallet.address, base58String);
       console.log('CreateDid result:', result);
-      
+
       if (result?.success) {
         setSuccess(true);
         setDidUri(did);
@@ -119,14 +119,14 @@ export default function ClaimDID() {
 
   return (
     <Box>
-      <Typography 
-        variant="h6" 
+      <Typography
+        variant="h6"
         gutterBottom
         sx={{ fontSize: '1rem' }}
       >
         My DID
       </Typography>
-      
+
       <Box sx={{ mt: 2 }}>
         {!success ? (
           <Button
@@ -154,19 +154,19 @@ export default function ClaimDID() {
         ) : (
           <Box sx={{ mt: 1 }}>
             {/* DID Display */}
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 alignItems: 'center',
                 gap: 1,
                 mb: 1.5,
                 maxWidth: '100%'
               }}
             >
-              <Chip 
-                label="DID" 
+              <Chip
+                label="DID"
                 size="small"
-                sx={{ 
+                sx={{
                   bgcolor: 'primary.main',
                   color: 'white',
                   fontWeight: 500,
@@ -179,9 +179,9 @@ export default function ClaimDID() {
                 }}
               />
               <Tooltip title={didUri || ''}>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
+                <Typography
+                  variant="body2"
+                  sx={{
                     fontFamily: 'monospace',
                     color: 'text.secondary',
                     fontSize: '0.8rem',
@@ -200,7 +200,7 @@ export default function ClaimDID() {
                 <IconButton
                   size="small"
                   onClick={() => handleCopy(didUri || '')}
-                  sx={{ 
+                  sx={{
                     ml: 'auto',
                     p: 0.5,
                     flexShrink: 0
@@ -214,8 +214,8 @@ export default function ClaimDID() {
             <Divider sx={{ my: 1.5 }} />
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 color="success.main"
                 sx={{ fontSize: '0.8rem' }}
               >
@@ -248,10 +248,10 @@ export default function ClaimDID() {
         )}
 
         {error && (
-          <Alert 
-            severity="error" 
+          <Alert
+            severity="error"
             onClose={() => setError(null)}
-            sx={{ 
+            sx={{
               mt: 1.5,
               borderRadius: 1.5,
               py: 0.75,
@@ -260,16 +260,16 @@ export default function ClaimDID() {
               }
             }}
           >
-            <Typography 
+            <Typography
               variant="body2"
               sx={{ fontSize: '0.8rem' }}
             >
               Error: {error}
             </Typography>
-            <Typography 
-              variant="caption" 
-              component="div" 
-              sx={{ 
+            <Typography
+              variant="caption"
+              component="div"
+              sx={{
                 mt: 0.5,
                 fontSize: '0.75rem'
               }}
@@ -281,4 +281,4 @@ export default function ClaimDID() {
       </Box>
     </Box>
   );
-} 
+}

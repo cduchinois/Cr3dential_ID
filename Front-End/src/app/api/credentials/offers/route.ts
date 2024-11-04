@@ -124,6 +124,7 @@ function getCredentialImage(type: string): string {
     "identity-m": "/images/identity-logo.png",
     "identity-f": "/images/identity-logo.png",
     "xrpl-training": "/images/xrpl-logo.png",
+    "futureverse-training-dev": "/images/futureverse-logo.png",
   };
 
   return imageMap[type] || "/images/default-credential.png";

@@ -15,7 +15,7 @@ function ConnectWithCredentials() {
     setLoadingConnection(true);
     setTimeout(() => {
       const newUrlSearchParams = new URLSearchParams();
-      newUrlSearchParams.append('verified_credentials', 'XRPL Dev Training');
+      newUrlSearchParams.append('verified_credentials', 'XRPL Futureverse Developer Training');
       newUrlSearchParams.append(
         'verified_credentials',
         'EasyA XRPL EVM Sidechain Training'
@@ -44,7 +44,7 @@ function ConnectWithCredentials() {
       <Typography variant='h5'>Connect to Ripple.com ?</Typography>
       <Stack>
         <Typography variant='body1' color='text.secondary'>
-          - XRPL Dev Training
+          - XRPL Futureverse Developer Training
         </Typography>
         <Typography variant='body1' color='text.secondary'>
           - EasyA XRPL EVM Sidechain Training

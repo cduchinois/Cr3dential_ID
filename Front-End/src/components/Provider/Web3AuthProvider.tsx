@@ -19,9 +19,11 @@ export const AuthContext = createContext<AuthContextType>({
   setIsLogged: () => {},
   loadingUserInfo: false,
   setLoadingUserInfo: () => {},
+  needsFunding: false,
   login: () => {},
   createDid: () => {},
   createIssuerDid: () => {},
+  getDid: () => {},
 });
 
 export const Web3AuthProvider = ({
@@ -78,22 +80,22 @@ export const Web3AuthProvider = ({
     try {
       setLoadingUserInfo(true);
       console.log('Starting wallet funding process for:', address);
-      
+
       const fundingResult = await rpc.fundAccount(address);
       console.log('Funding completed:', fundingResult);
-      
+
       if (fundingResult.success) {
         setNeedsFunding(false);
-        
+
         // Wait a bit for the ledger to be updated
         await new Promise(resolve => setTimeout(resolve, 5000));
-        
+
         // Update the wallet with new balance info
         const accountInfo = await rpc.getAccounts();
         setUserWallet({
           address: accountInfo.account,
         });
-        
+
         // Trigger a balance refresh in the UI
         const balanceEvent = new CustomEvent('balanceUpdated');
         window.dispatchEvent(balanceEvent);
@@ -113,15 +115,15 @@ export const Web3AuthProvider = ({
           setLoadingUserInfo(true);
           const newXrplRPC = new XrplRPC(provider);
           setXrplRPC(newXrplRPC);
-          
+
           console.log("Attempting to get accounts...");
           const accounts = await newXrplRPC.getAccounts();
           console.log('Account info:', accounts);
-          
+
           setUserWallet({
             address: accounts.account,
           });
-          
+
           if (accounts.needsFunding) {
             console.log('Account needs funding, initiating funding process...');
             setNeedsFunding(true);
@@ -173,6 +175,14 @@ export const Web3AuthProvider = ({
     return result;
   };
 
+  const getDid = async (address: string) => {
+    if (!xrplRPC) {
+      console.error('xrplRPC not initialized');
+      return null;
+    }
+    return await xrplRPC.getDidFromAccount(address);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -190,6 +200,7 @@ export const Web3AuthProvider = ({
         login,
         createDid,
         createIssuerDid,
+        getDid,
       }}
     >
       {children}

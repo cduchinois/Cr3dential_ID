@@ -1,15 +1,15 @@
 'use client';
-import { 
-  Box, 
-  Container, 
-  Paper, 
-  Typography, 
-  Select, 
-  MenuItem, 
-  FormControl, 
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
   InputLabel,
   SelectChangeEvent,
-  Divider 
+  Divider
 } from '@mui/material';
 import LoginButton from '@/components/Web3Auth/LoginButton';
 import Balance from '@/components/Web3Auth/Balance';
@@ -19,8 +19,9 @@ import { useState, useEffect } from 'react';
 import { NetworkType, getCurrentNetwork, setCurrentNetwork } from '@/lib/networkConfig';
 
 export default function ProfilePage() {
-  const { isLogged, userWallet, needsFunding } = useWeb3Auth();
+  const { isLogged, userWallet, needsFunding, getDid } = useWeb3Auth();
   const [network, setNetwork] = useState<NetworkType>(getCurrentNetwork());
+  const [hasDid, setHasDid] = useState<boolean>(false);
 
   const getWalletStatus = () => {
     if (!isLogged) return 'Not Connected';
@@ -42,11 +43,27 @@ export default function ProfilePage() {
     setNetwork(getCurrentNetwork());
   }, []);
 
+  // Check for existing DID when wallet is connected
+  useEffect(() => {
+    const checkDid = async () => {
+      if (isLogged && userWallet?.address) {
+        const did = await getDid(userWallet.address);
+        if (did) {
+          localStorage.setItem(`did_${userWallet.address}`, did);
+          setHasDid(true);
+        } else {
+          setHasDid(false);
+        }
+      }
+    };
+    checkDid();
+  }, [isLogged, userWallet, getDid]);
+
   return (
     <Container maxWidth="sm">
-      <Paper 
-        sx={{ 
-          p: 3, 
+      <Paper
+        sx={{
+          p: 3,
           mt: 2
         }}
       >
@@ -54,12 +71,12 @@ export default function ProfilePage() {
           <Typography variant="h6" gutterBottom>
             Wallet Information
           </Typography>
-          
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <LoginButton />
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 color={getWalletStatus() === 'Active' ? 'success.main' : 'warning.main'}
               >
                 Status: {getWalletStatus()}
@@ -87,10 +104,19 @@ export default function ProfilePage() {
           </Box>
         </Box>
 
-        {isLogged && userWallet && (
+        {isLogged && userWallet && !hasDid && (
           <>
             <Divider sx={{ my: 2 }} />
             <ClaimDID />
+          </>
+        )}
+
+        {isLogged && userWallet && hasDid && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Typography>
+              DID already claimed for this wallet
+            </Typography>
           </>
         )}
       </Paper>

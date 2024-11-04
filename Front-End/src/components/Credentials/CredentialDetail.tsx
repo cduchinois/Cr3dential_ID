@@ -41,9 +41,9 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
 
   return (
     <Box sx={{ p: 2, maxWidth: '800px', margin: '0 auto' }}>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+      <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 3 }}>
         <Typography
-          variant="h5"
+          variant='h5'
           sx={{
             color: '#fff',
             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
@@ -73,11 +73,11 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
       >
         <CardContent>
           <Typography
-            variant="h6"
+            variant='h6'
             gutterBottom
             sx={{ color: '#fff', fontWeight: 500 }}
           >
-            Information
+            Credential Information
           </Typography>
           <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
           <CredentialFields
@@ -89,6 +89,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
 
       <Card
         sx={{
+          mb: 3,
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(10px)',
           boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
@@ -97,14 +98,14 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
       >
         <CardContent>
           <Typography
-            variant="h6"
+            variant='h6'
             gutterBottom
             sx={{ color: '#fff', fontWeight: 500 }}
           >
             Issuer Details
           </Typography>
           <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-          <Stack direction="row" spacing={3} alignItems="center">
+          <Stack direction='row' spacing={3} alignItems='center'>
             <Box
               sx={{
                 backgroundColor: '#fff',
@@ -130,16 +131,18 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
             <Stack spacing={2} sx={{ flexGrow: 1 }}>
               <Box>
                 <Typography
-                  variant="subtitle2"
+                  variant='subtitle2'
                   sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
                 >
                   Issuer
                 </Typography>
-                <Typography sx={{ color: '#fff' }}>{credential.issuer}</Typography>
+                <Typography sx={{ color: '#fff' }}>
+                  {credential.issuer}
+                </Typography>
               </Box>
               <Box>
                 <Typography
-                  variant="subtitle2"
+                  variant='subtitle2'
                   sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
                 >
                   Issuance Date
@@ -151,7 +154,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
               {credential.proof && (
                 <Box>
                   <Typography
-                    variant="subtitle2"
+                    variant='subtitle2'
                     sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
                   >
                     Proof Type
@@ -162,6 +165,73 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
                 </Box>
               )}
             </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <Card
+        sx={{
+          mb: 3,
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <CardContent>
+          <Typography
+            variant='h6'
+            gutterBottom
+            sx={{ color: '#fff', fontWeight: 500 }}
+          >
+            User Details
+          </Typography>
+          <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+          <Stack spacing={2}>
+            <Box>
+              <Typography
+                variant='subtitle2'
+                sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
+              >
+                DID
+              </Typography>
+              <Typography
+                sx={{
+                  color: '#fff',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  p: 1.5,
+                  borderRadius: 1,
+                  fontSize: '0.95rem',
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all',
+                }}
+              >
+                {credential.credentialSubject.id}
+              </Typography>
+            </Box>
+            {credential.proof && (
+              <Box>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
+                >
+                  Verification Method
+                </Typography>
+                <Typography
+                  sx={{
+                    color: '#fff',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    p: 1.5,
+                    borderRadius: 1,
+                    fontSize: '0.95rem',
+                    fontFamily: 'monospace',
+                    wordBreak: 'break-all',
+                  }}
+                >
+                  {credential.proof.verificationMethod}
+                </Typography>
+              </Box>
+            )}
           </Stack>
         </CardContent>
       </Card>

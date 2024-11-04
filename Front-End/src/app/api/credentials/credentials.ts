@@ -5,19 +5,27 @@ export const credentialOfferData: {
   };
 } = {
   "42-software-engineering": {
-    type: "42 Software Engineering",
+    type: "Training",
     fields: {
-      trainingName: "Software Engineering",
-      trainingProvider: "42",
-      trainingLocation: "Paris, France",
+      Name: "Software Engineering",
+      Provider: "42",
+      Location: "Paris, France",
     },
   },
   "easya-training": {
-    type: "EasyA Training",
+    type: "Training",
     fields: {
-      trainingName: "Blockchain Basis",
-      trainingProvider: "EasyA",
-      trainingLocation: "Paris, France",
+      Name: "Blockchain Basis",
+      Provider: "EasyA",
+      Location: "Paris, France",
+    },
+  },
+  "futureverse-training-dev": {
+    type: "Training",
+    fields: {
+      Name: "Developer Training",
+      Provider: "Futureverse",
+      Location: "Paris, France",
     },
   },
   "identity-m": {
@@ -61,11 +69,11 @@ export const credentialOfferData: {
     },
   },
   "xrpl-training": {
-    type: "XRPL Training",
+    type: "Training",
     fields: {
-      trainingName: "Dev Training",
-      trainingProvider: "XRP Ledger",
-      trainingLocation: "Paris, France",
+      Name: "XRP Legder Fundamentals",
+      Provider: "XRPL Commons",
+      Location: "Paris, France",
     },
   },
 };

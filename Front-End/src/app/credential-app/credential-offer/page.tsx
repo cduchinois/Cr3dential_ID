@@ -8,19 +8,33 @@ import {
   CardContent,
   CircularProgress,
   Divider,
+  Stack,
   Typography,
 } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-// import { useWeb3Auth } from '@/hooks/useWeb3Auth';
+import { useWeb3Auth } from '@/hooks/useWeb3Auth';
 
 // import { xrplProvider } from '../../../lib/web3Auth';
 
 import { StoredCredential } from '@/types/credential';
 import { StoredDIDDocument } from '@/types/did';
 
+/**
+ * Represents a credential offer with its properties
+ * @property id - Unique identifier for the credential offer
+ * @property type - The type of credential being offered
+ * @property typeLabel - Optional display label for the credential type
+ * @property image - Optional image URL associated with the credential
+ * @property issuer - The DID of the credential issuer
+ * @property holder - The DID of the intended credential holder
+ * @property issuanceDate - Date when the credential was/will be issued
+ * @property expirationDate - Date when the credential will expire
+ * @property status - Current status of the credential offer
+ * @property fields - Key-value pairs of additional credential fields
+ */
 interface CredentialOffer {
   id: string;
   type: string;
@@ -37,7 +51,7 @@ interface CredentialOffer {
 export default function CredentialRequestPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  // const { web3auth } = useWeb3Auth();
+  const { userWallet } = useWeb3Auth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [credentialOffer, setCredentialOffer] =
@@ -53,7 +67,7 @@ export default function CredentialRequestPage() {
     }
 
     // TODO: Get these values from your authentication context
-    const did = 'user-did';
+    const did = localStorage.getItem(`did_${userWallet?.address}`) || '';
     const email = 'user@example.com';
 
     fetch('/api/credentials/requests', {
@@ -84,7 +98,7 @@ export default function CredentialRequestPage() {
 
       const challenge = `${credentialOffer?.id}-${crypto.randomUUID()}`;
       const signature = 'test'; //await xrplProvider?.signMessage(challenge);
-      const did = 'did:xrp:1:1234567890';
+      const did = localStorage.getItem(`did_${userWallet?.address}`) || '';
 
       const response = await fetch('/api/credentials/offers', {
         method: 'POST',
@@ -246,7 +260,7 @@ export default function CredentialRequestPage() {
               fontWeight: 500,
             }}
           >
-            Credential Details
+            Issuer Details
           </Typography>
           <Box sx={{ display: 'grid', gap: 2 }}>
             {[
@@ -297,7 +311,7 @@ export default function CredentialRequestPage() {
               fontWeight: 500,
             }}
           >
-            Credential Content
+            Content
           </Typography>
           <Box sx={{ display: 'grid', gap: 2 }}>
             {Object.entries(credentialOffer.fields).map(([key, value]) => (
@@ -318,6 +332,50 @@ export default function CredentialRequestPage() {
               </Box>
             ))}
           </Box>
+        </CardContent>
+      </Card>
+
+      <Card
+        sx={{
+          mb: 3,
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <CardContent>
+          <Typography
+            variant='h6'
+            gutterBottom
+            sx={{ color: '#fff', fontWeight: 500 }}
+          >
+            User Details
+          </Typography>
+          <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+          <Stack spacing={2}>
+            <Box>
+              <Typography
+                variant='subtitle2'
+                sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
+              >
+                DID
+              </Typography>
+              <Typography
+                sx={{
+                  color: '#fff',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  p: 1.5,
+                  borderRadius: 1,
+                  fontSize: '0.95rem',
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all',
+                }}
+              >
+                {credentialOffer.holder}
+              </Typography>
+            </Box>
+          </Stack>
         </CardContent>
       </Card>
 
