@@ -7,6 +7,8 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { Suspense, useMemo } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import MainContainer from '@/components/MainLayout/MainContainer';
 
@@ -75,6 +77,7 @@ function CredentialAppLayout({ children }: { children: React.ReactNode }) {
           </Box>
         </MainContainer>
       </Box>
+      <ToastContainer position="bottom-right" />
     </ThemeProvider>
   );
 }

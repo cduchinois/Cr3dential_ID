@@ -11,26 +11,32 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { useWeb3Auth } from '@/hooks/useWeb3Auth';
+import { xrplProvider } from '../../../lib/web3Auth';
 
 interface CredentialOffer {
+  id: string;
   type: string;
   issuer: string;
   holder: string;
   issuanceDate: string;
   expirationDate: string;
   status: string;
-  fields: Record<string, any>;
+  fields: Record<string, string>;
 }
 
 export default function CredentialRequestPage() {
-  const theme = useTheme();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  // const { web3auth } = useWeb3Auth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [credentialOffer, setCredentialOffer] =
     useState<CredentialOffer | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const type = searchParams.get('type');
@@ -66,14 +72,59 @@ export default function CredentialRequestPage() {
       });
   }, [searchParams]);
 
-  const handleAccept = () => {
-    // TODO: Implement accept logic
-    console.log('Accepting credential offer');
+  const handleAccept = async () => {
+    try {
+      setIsProcessing(true);
+
+      // Generate a challenge
+      const challenge = `${credentialOffer?.id}-${crypto.randomUUID()}`;
+
+      // TODO: Get XRPL provider and sign challenge
+      // const provider = await web3auth?.provider;
+      // const xrplProvider = provider?.xrpl;
+      const signature = 'test' //await xrplProvider?.signMessage(challenge);
+      const did = 'did:xrp:1:1234567890' //await web3auth?.getDID();
+
+      // if (!signature || !did) {
+      //   throw new Error('Failed to sign challenge');
+      // }
+
+      // Send acceptance request
+      const response = await fetch('/api/credentials/offers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: credentialOffer?.id,
+          did,
+          challenge,
+          signature,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to accept credential offer');
+      }
+
+      toast.success('Your credential request has been accepted and is being processed');
+      router.push('/credential-app/credentials');
+    } catch (error) {
+      console.error('Error accepting credential offer:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to accept credential offer'
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleDecline = () => {
-    // TODO: Implement decline logic
-    console.log('Declining credential offer');
+    router.push('/credential-app/credentials');
   };
 
   if (loading) {
@@ -231,9 +282,30 @@ export default function CredentialRequestPage() {
 
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
         <Button
+          variant='outlined'
+          size='large'
+          onClick={handleDecline}
+          disabled={isProcessing}
+          sx={{
+            minWidth: '120px',
+            backgroundColor: 'transparent',
+            color: '#ff5252',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid #ff5252',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 82, 82, 0.15)',
+              borderColor: '#ff1744',
+              color: '#ff1744',
+            },
+          }}
+        >
+          Decline
+        </Button>
+        <Button
           variant='contained'
           size='large'
           onClick={handleAccept}
+          disabled={isProcessing}
           sx={{
             minWidth: '120px',
             backgroundColor: '#4caf50',
@@ -245,23 +317,7 @@ export default function CredentialRequestPage() {
             },
           }}
         >
-          Accept
-        </Button>
-        <Button
-          variant='outlined'
-          size='large'
-          onClick={handleDecline}
-          sx={{
-            minWidth: '120px',
-            borderColor: 'rgba(255, 255, 255, 0.5)',
-            color: '#fff',
-            '&:hover': {
-              borderColor: 'rgba(255, 255, 255, 0.8)',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        >
-          Decline
+          {isProcessing ? 'Processing...' : 'Accept'}
         </Button>
       </Box>
     </Box>

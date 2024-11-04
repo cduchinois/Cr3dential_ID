@@ -77,6 +77,9 @@ importers:
       react-icons:
         specifier: ^4.12.0
         version: 4.12.0(react@18.3.1)
+      react-toastify:
+        specifier: ^x.x.x
+        version: 10.0.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: ^2.1.0
         version: 2.3.0
@@ -4183,6 +4186,12 @@ packages:
     peerDependencies:
       react: '>=16.4.1'
       react-dom: '>=16.4.1'
+
+  react-toastify@10.0.6:
+    resolution: {integrity: sha512-yYjp+omCDf9lhZcrZHKbSq7YMuK0zcYkDFTzfRFgTXkTFHZ1ToxwAonzA4JI5CxA91JpjFLmwEsZEgfYfOqI1A==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
 
   react-transition-group@4.4.5:
     resolution: {integrity: sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==}
@@ -9937,6 +9946,12 @@ snapshots:
     dependencies:
       lodash.isequal: 4.5.0
       qrcode-generator: 1.4.4
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  react-toastify@10.0.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      clsx: 2.1.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 

@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
 
     // Create credential offer object
     const credentialOffer = {
+      id: crypto.randomUUID(),
       type: type,
-      issuer: "did:example:issuer", // TODO: Import from config
+      issuer: "did:xrp:1:1234567890", // TODO: Import from config
       holder: did,
       issuanceDate: new Date().toISOString(),
       expirationDate: new Date(
