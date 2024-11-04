@@ -29,12 +29,9 @@ function CredentialAppLayout({ children }: { children: React.ReactNode }) {
           },
         },
         components: {
-          // Name of the component
           MuiPaper: {
             styleOverrides: {
-              // Name of the slot
               root: {
-                // Some CSS
                 borderRadius: '10px',
               },
             },
@@ -65,13 +62,17 @@ function CredentialAppLayout({ children }: { children: React.ReactNode }) {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100%',
+          minHeight: '100vh',
+          maxHeight: '100vh',
+          overflow: 'auto',
           backgroundColor: '#00c1d2',
           backgroundImage: 'linear-gradient(57deg, #00919e 2%, #7e0180 100%)',
         }}
       >
         <MainContainer isMobile={isMobile}>
-          <Suspense>{children}</Suspense>
+          <Box sx={{ overflow: 'auto', maxHeight: '100%', width: '100%' }}>
+            <Suspense>{children}</Suspense>
+          </Box>
         </MainContainer>
       </Box>
     </ThemeProvider>
