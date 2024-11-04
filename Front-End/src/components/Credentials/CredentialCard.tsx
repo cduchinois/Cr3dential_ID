@@ -9,7 +9,28 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
-function CredentialCard({ credential }: { credential: ICredential }) {
+
+import { StoredCredential } from '@/types/credential';
+
+function CredentialCard({ credential }: { credential: StoredCredential }) {
+  // Get display name based on credential type
+  const getCredentialName = (credential: StoredCredential) => {
+    const type = credential.type[credential.type.length - 1];
+    return type
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Get issuer display name
+  const getIssuerName = (issuerDid: string) => {
+    const issuerMap: Record<string, string> = {
+      'did:xrp:1:1234567890': 'XRPL Commons',
+      // Add other issuer mappings as needed
+    };
+    return issuerMap[issuerDid] || issuerDid;
+  };
+
   return (
     <Link href={`/credential-app/credentials/${credential.id}`} passHref>
       <Card
@@ -20,20 +41,39 @@ function CredentialCard({ credential }: { credential: ICredential }) {
           cursor: 'pointer',
         }}
       >
-        <Image
-          src={credential.img}
-          alt={credential.name}
-          width={100}
-          height={100}
-        />
+        <div
+          style={{
+            backgroundColor: '#fff',
+            width: '100px',
+            height: '100px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '8px',
+          }}
+        >
+          <Image
+            src={credential.image || '/images/default-credential.png'}
+            alt={getCredentialName(credential)}
+            width={100}
+            height={100}
+            style={{
+              objectFit: 'contain',
+              borderRadius: '8px',
+            }}
+          />
+        </div>
         <Stack
           sx={{
             flexGrow: 1,
           }}
         >
-          <Typography>{credential.name}</Typography>
+          <Typography>{credential.typeLabel || getCredentialName(credential)}</Typography>
           <Typography color='text.secondary'>
-            {credential.issuer.name}
+            {getIssuerName(credential.issuer)}
+          </Typography>
+          <Typography variant="caption" color='text.secondary'>
+            Issued: {new Date(credential.issuanceDate).toLocaleDateString()}
           </Typography>
           <CardActions
             sx={{

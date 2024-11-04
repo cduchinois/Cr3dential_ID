@@ -23,7 +23,7 @@ declare global {
     id: string;
     issuer: IIssuer;
     name: string;
-    img: string | StaticImageData;
+    image: string | StaticImageData;
     issueDate: Date;
     description: string;
     status: string;
