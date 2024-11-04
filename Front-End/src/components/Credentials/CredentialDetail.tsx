@@ -1,86 +1,171 @@
 'use client';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
-import { Card, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Stack,
+  Typography,
+} from '@mui/material';
 import Image from 'next/image';
 
-import { useWeb3Auth } from '@/hooks/useWeb3Auth';
-import { shrinkString } from '@/lib/utils';
+import { StoredCredential } from '@/types/credential';
+import CredentialFields from './CredentialFields';
 
-function CredentialDetail({ credential }: { credential: ICredential }) {
-  const webAuth = useWeb3Auth();
+interface CredentialDetailProps {
+  credential: StoredCredential;
+}
+
+function CredentialDetail({ credential }: CredentialDetailProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return '#4caf50';
+      case 'revoked':
+        return '#f44336';
+      case 'expired':
+        return '#ff9800';
+      default:
+        return '#9e9e9e';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
 
   return (
-    <Card
-      sx={{
-        display: 'flex',
-        alignItems: 'stretch',
-        flexDirection: 'column',
-        gap: 2,
-        p: 2,
-        overflowY: 'auto',
-        height: '100%',
-        maxHeight: '100%',
-        scrollbarWidth: 'thin',
-      }}
-    >
-      <Stack justifyContent='center' alignItems='center' alignSelf='center'>
-        <Image
-          src={credential.img}
-          alt={credential.name}
-          width={100}
-          height={100}
-        />
+    <Box sx={{ p: 2, maxWidth: '800px', margin: '0 auto' }}>
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
         <Typography
+          variant="h5"
           sx={{
-            mt: 2,
+            color: '#fff',
+            textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            fontWeight: 600,
+            flexGrow: 1,
           }}
         >
-          {credential.name}
+          {credential.typeLabel || credential.type[credential.type.length - 1]}
         </Typography>
-        <Typography variant='body2' color='text.secondary'>
-          {credential.issuer.name}
-        </Typography>
+        <Chip
+          label={credential.status.toUpperCase()}
+          sx={{
+            backgroundColor: getStatusColor(credential.status),
+            color: '#fff',
+          }}
+        />
       </Stack>
-      <Stack>
-        <Typography variant='body1' fontWeight='bold'>
-          Issuer
-        </Typography>
-        <Stack direction='row' gap={1} alignItems='center'>
-          <Typography>{credential.issuer.name}</Typography>
-          <DoneAllIcon />
-        </Stack>
 
-        <Typography>
-          DID:{credential.blockchain}:
-          {shrinkString(credential.issuer.address, 3, 3)}
-        </Typography>
-      </Stack>
-      <Stack direction='row' gap={1}>
-        <Typography fontWeight='bold'>Issue Date :</Typography>
-        <Typography>{credential.issueDate.toLocaleDateString()}</Typography>
-      </Stack>
-      <Stack>
-        <Typography fontWeight='bold'>Credential description</Typography>
-        <Typography>{credential.description}</Typography>
-      </Stack>
-      <Stack direction='row' gap={1}>
-        <Typography fontWeight='bold'>Credential Status :</Typography>
-        <Typography>{credential.status}</Typography>
-      </Stack>
-      <Stack flexWrap='wrap'>
-        <Typography fontWeight='bold'>Credential Type</Typography>
-        <Typography>{credential.type}</Typography>
-      </Stack>
-      <Stack>
-        <Typography fontWeight='bold'>Destinator</Typography>
-        <Typography>{credential.destinator.name}</Typography>
-        <Typography noWrap>
-          {`did:xrp:1:${webAuth.userWallet?.address}` ||
-            `DID:${credential.blockchain}:
-          ${shrinkString(credential.destinator.address, 3, 3)}`}
-        </Typography>
-      </Stack>
-    </Card>
+      <Card
+        sx={{
+          mb: 3,
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <CardContent>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: '#fff', fontWeight: 500 }}
+          >
+            Information
+          </Typography>
+          <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+          <CredentialFields
+            type={credential.type[credential.type.length - 1]}
+            fields={credential.credentialSubject}
+          />
+        </CardContent>
+      </Card>
+
+      <Card
+        sx={{
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <CardContent>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: '#fff', fontWeight: 500 }}
+          >
+            Issuer Details
+          </Typography>
+          <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+          <Stack direction="row" spacing={3} alignItems="center">
+            <Box
+              sx={{
+                backgroundColor: '#fff',
+                width: '150px',
+                height: '150px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+              }}
+            >
+              <Image
+                src={credential.image || '/images/default-credential.png'}
+                alt={credential.type[credential.type.length - 1]}
+                width={150}
+                height={150}
+                style={{
+                  objectFit: 'contain',
+                  borderRadius: '8px',
+                }}
+              />
+            </Box>
+            <Stack spacing={2} sx={{ flexGrow: 1 }}>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
+                >
+                  Issuer
+                </Typography>
+                <Typography sx={{ color: '#fff' }}>{credential.issuer}</Typography>
+              </Box>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
+                >
+                  Issuance Date
+                </Typography>
+                <Typography sx={{ color: '#fff' }}>
+                  {formatDate(credential.issuanceDate)}
+                </Typography>
+              </Box>
+              {credential.proof && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
+                  >
+                    Proof Type
+                  </Typography>
+                  <Typography sx={{ color: '#fff' }}>
+                    {credential.proof.type}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }
 

@@ -71,15 +71,15 @@ export async function POST(request: NextRequest) {
         "https://www.w3.org/2018/credentials/v1",
         "https://www.w3.org/2018/credentials/examples/v1",
       ],
-      type: ["VerifiableCredential", credentialOffer.type], // Add the specific credential type
-      typeLabel: credentialOffer.typeLabel,
+      type: ["VerifiableCredential", credentialOffer.type],
+      typeLabel: credentialData.type,
       issuer: "did:xrp:1:1234567890",
       issuanceDate: new Date().toISOString(),
       credentialSubject: {
         id: credentialOffer.holder,
-        ...credentialData, // Add all fields from the credential data
+        ...credentialData.fields,
       },
-      image: credentialOffer.image || getCredentialImage(credentialOffer.type), // Add appropriate image based on credential type
+      image: credentialOffer.image || getCredentialImage(credentialOffer.type),
       proof: {
         type: "XrplSecp256k1Signature2019",
         created: new Date().toISOString(),

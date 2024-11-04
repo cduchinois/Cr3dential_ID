@@ -9,17 +9,23 @@ import {
   CircularProgress,
   Divider,
   Typography,
-  useTheme,
 } from '@mui/material';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useWeb3Auth } from '@/hooks/useWeb3Auth';
-import { xrplProvider } from '../../../lib/web3Auth';
+
+// import { useWeb3Auth } from '@/hooks/useWeb3Auth';
+
+// import { xrplProvider } from '../../../lib/web3Auth';
+
+import { StoredCredential } from '@/types/credential';
+import { StoredDIDDocument } from '@/types/did';
 
 interface CredentialOffer {
   id: string;
   type: string;
+  typeLabel?: string;
+  image?: string;
   issuer: string;
   holder: string;
   issuanceDate: string;
@@ -76,28 +82,17 @@ export default function CredentialRequestPage() {
     try {
       setIsProcessing(true);
 
-      // Generate a challenge
       const challenge = `${credentialOffer?.id}-${crypto.randomUUID()}`;
+      const signature = 'test'; //await xrplProvider?.signMessage(challenge);
+      const did = 'did:xrp:1:1234567890';
 
-      // TODO: Get XRPL provider and sign challenge
-      // const provider = await web3auth?.provider;
-      // const xrplProvider = provider?.xrpl;
-      const signature = 'test' //await xrplProvider?.signMessage(challenge);
-      const did = 'did:xrp:1:1234567890' //await web3auth?.getDID();
-
-      // if (!signature || !did) {
-      //   throw new Error('Failed to sign challenge');
-      // }
-
-      // Send acceptance request
       const response = await fetch('/api/credentials/offers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: credentialOffer?.id,
-          did,
+          credentialOffer,
           challenge,
           signature,
         }),
@@ -109,7 +104,60 @@ export default function CredentialRequestPage() {
         throw new Error(data.error || 'Failed to accept credential offer');
       }
 
-      toast.success('Your credential request has been accepted and is being processed');
+      // Generate a unique ID for the credential
+      const credentialId = crypto.randomUUID();
+      const storedCredential = {
+        ...data.credential,
+        id: credentialId,
+      };
+
+      // Store credential
+      const existingCredentials = JSON.parse(
+        localStorage.getItem('credentials') || '[]'
+      ) as StoredCredential[];
+      existingCredentials.push(storedCredential);
+      localStorage.setItem('credentials', JSON.stringify(existingCredentials));
+
+      // Store or update DID Document with credential link
+      const existingDIDDocs = JSON.parse(
+        localStorage.getItem('didDocuments') || '{}'
+      ) as Record<string, StoredDIDDocument>;
+
+      if (!existingDIDDocs[did]) {
+        // Create new DID Document if it doesn't exist
+        existingDIDDocs[did] = {
+          '@context': ['https://www.w3.org/ns/did/v1'],
+          id: did,
+          controller: did,
+          verificationMethod: [
+            {
+              id: `${did}#keys-1`,
+              type: 'EcdsaSecp256k1VerificationKey2019',
+              controller: did,
+              publicKeyMultibase: 'test-public-key', // This would come from web3auth in real implementation
+            },
+          ],
+          authentication: [`${did}#keys-1`],
+          assertionMethod: [`${did}#keys-1`],
+          service: [
+            {
+              id: `${did}#credential-service`,
+              type: 'CredentialService',
+              serviceEndpoint: data.didDocumentUrl,
+            },
+          ],
+          linkedCredentials: [credentialId],
+        };
+      } else {
+        // Add credential ID to existing DID Document's linked credentials
+        existingDIDDocs[did].linkedCredentials = [
+          ...new Set([...existingDIDDocs[did].linkedCredentials, credentialId]),
+        ];
+      }
+
+      localStorage.setItem('didDocuments', JSON.stringify(existingDIDDocs));
+
+      toast.success('Credential has been created and linked successfully');
       router.push('/credential-app/credentials');
     } catch (error) {
       console.error('Error accepting credential offer:', error);
