@@ -6,9 +6,9 @@ import { W3CCredential } from "@/types/credential";
 import { GET as getIssuerMetadata } from "../../issuers/route";
 
 // Add Pinata configuration
-const PINATA_API_KEY = process.env.PINATA_API_KEY;
-const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
-const PINATA_JWT = process.env.PINATA_JWT;
+const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY;
+const PINATA_SECRET_KEY = process.env.NEXT_PUBLIC_PINATA_API_SECRET;
+const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT;
 
 if (!PINATA_JWT) {
   console.warn("Missing PINATA_JWT environment variable");
@@ -58,6 +58,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const pinataJWT = process.env.NEXT_PUBLIC_PINATA_JWT;
+    
+    if (!pinataJWT) {
+      console.error('Missing Pinata JWT');
+      return NextResponse.json(
+        { error: 'Pinata JWT not configured' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { credentialOffer, challenge, signature } = body;
 
@@ -112,55 +122,76 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Upload credential to Pinata
-    const pinataResponse = await fetch(
-      "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${PINATA_JWT}`,
-        },
-        body: JSON.stringify({
-          pinataContent: w3cCredential,
-          pinataMetadata: {
-            name: `${w3cCredential.type[1]}-${Date.now()}`,
+    // Upload credential to Pinata with better error handling
+    try {
+      const pinataResponse = await fetch(
+        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${pinataJWT}`,
           },
-        }),
-      }
-    );
+          body: JSON.stringify({
+            pinataContent: w3cCredential,
+            pinataMetadata: {
+              name: `${w3cCredential.type[1]}-${Date.now()}`,
+            },
+          }),
+        }
+      );
 
-    if (!pinataResponse.ok) {
-      throw new Error("Failed to upload credential to IPFS");
+      if (!pinataResponse.ok) {
+        const errorData = await pinataResponse.text();
+        console.error('Pinata Error:', {
+          status: pinataResponse.status,
+          statusText: pinataResponse.statusText,
+          error: errorData
+        });
+        throw new Error(`Pinata Error: ${pinataResponse.status} - ${errorData}`);
+      }
+
+      const pinataData = await pinataResponse.json();
+      const ipfsHash = pinataData.IpfsHash;
+
+      // Create DID Document URL using IPFS hash
+      const didDocumentUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+
+      // Store credential with IPFS reference
+      const storedCredential = {
+        ...w3cCredential,
+        status: "active",
+        ipfsHash,
+        didDocumentUrl,
+      };
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Credential created and uploaded successfully",
+          credential: storedCredential,
+          didDocumentUrl,
+        },
+        { status: 202 }
+      );
+    } catch (pinataError: unknown) {
+      console.error('Pinata Upload Error:', pinataError);
+      const errorMessage = pinataError instanceof Error 
+        ? pinataError.message 
+        : 'Unknown Pinata error';
+      return NextResponse.json(
+        { error: `Failed to upload to IPFS: ${errorMessage}` },
+        { status: 500 }
+      );
     }
 
-    const pinataData = await pinataResponse.json();
-    const ipfsHash = pinataData.IpfsHash;
-
-    // Create DID Document URL using IPFS hash
-    const didDocumentUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
-
-    // Store credential with IPFS reference
-    const storedCredential = {
-      ...w3cCredential,
-      status: "active",
-      ipfsHash,
-      didDocumentUrl,
-    };
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Credential created and uploaded successfully",
-        credential: storedCredential,
-        didDocumentUrl,
-      },
-      { status: 202 }
-    );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error processing credential offer:", error);
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'Unknown error';
     return NextResponse.json(
-      { error: `Failed to process credential offer: ${error}` },
+      { error: `Failed to process credential offer: ${errorMessage}` },
       { status: 500 }
     );
   }

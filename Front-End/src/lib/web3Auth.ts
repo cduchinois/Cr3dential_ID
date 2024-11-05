@@ -3,7 +3,11 @@ import { Web3Auth } from '@web3auth/modal';
 import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
 import { XrplPrivateKeyProvider } from '@web3auth/xrpl-provider';
 
-const clientId = process.env.NEXT_PUBLIC_WEB3_AUTH_CLIENT_ID || '';
+const clientId = process.env.NEXT_PUBLIC_WEB3_AUTH_CLIENT_ID;
+console.log('Environment variables:', {
+  clientId,
+  allEnv: process.env
+});
 
 export const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.XRPL,
@@ -63,6 +67,10 @@ export const xrplProvider = new XrplPrivateKeyProvider({
 
 export const instantiateWeb3Auth = () => {
   if (!process.env.NEXT_PUBLIC_WEB3_AUTH_CLIENT_ID) {
+    console.error('Environment check failed:', {
+      clientId: process.env.NEXT_PUBLIC_WEB3_AUTH_CLIENT_ID,
+      env: process.env
+    });
     throw new Error('NEXT_PUBLIC_WEB3_AUTH_CLIENT_ID is not defined in environment variables');
   }
   
