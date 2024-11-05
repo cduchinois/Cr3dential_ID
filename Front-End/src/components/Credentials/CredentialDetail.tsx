@@ -105,7 +105,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
             Issuer Details
           </Typography>
           <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-          <Stack direction='row' spacing={3} alignItems='center'>
+          <Stack spacing={3} alignItems='center'>
             <Box
               sx={{
                 backgroundColor: '#fff',
@@ -128,7 +128,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
                 }}
               />
             </Box>
-            <Stack spacing={2} sx={{ flexGrow: 1 }}>
+            <Stack spacing={2} sx={{ width: '100%' }}>
               <Box>
                 <Typography
                   variant='subtitle2'

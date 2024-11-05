@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { credentialOfferData, credentialOfferTypes } from "../credentials";
 
 import { W3CCredential } from "@/types/credential";
+import { GET as getIssuerMetadata } from "../../issuers/route";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,15 +24,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch issuer metadata
+    const issuerResponse = await getIssuerMetadata(request);
+    const issuerData = await issuerResponse.json();
+
     const credentialOffer = {
       type: type,
-      issuer: "did:xrp:1:1234567890", // TODO: Import from config
+      issuer: issuerData.issuer.did,
       fields: credentialOfferData[type],
     };
 
     return NextResponse.json({
       success: true,
       credentialOffer,
+      issuer: issuerData.issuer,
     });
   } catch (error) {
     return NextResponse.json(
@@ -50,14 +56,16 @@ export async function POST(request: NextRequest) {
     if (!credentialOffer || !challenge || !signature) {
       return NextResponse.json(
         {
-          error: "Missing required fields: did, type, challenge, and signature",
+          error:
+            "Missing required fields: credentialOffer, challenge, and signature",
         },
         { status: 400 }
       );
     }
 
     // Get the credential data based on type
-    const credentialData = credentialOfferData[credentialOffer.type];
+    const credentialData =
+      credentialOfferData[credentialOffer.credentialSchema[0].id];
     if (!credentialData) {
       return NextResponse.json(
         { error: "Invalid credential type" },
@@ -71,26 +79,26 @@ export async function POST(request: NextRequest) {
         "https://www.w3.org/2018/credentials/v1",
         "https://www.w3.org/2018/credentials/examples/v1",
       ],
-      type: ["VerifiableCredential", credentialOffer.type],
+      type: ["VerifiableCredential", `${credentialOffer.type}Credential`],
       typeLabel: credentialData.type,
-      issuer: "did:xrp:1:1234567890",
+      issuer: (await (await getIssuerMetadata(request)).json()).issuers[0].did,
       issuanceDate: new Date().toISOString(),
       credentialSubject: {
-        id: credentialOffer.holder,
+        id: credentialOffer.subject,
         ...credentialData.fields,
       },
       image: credentialOffer.image || getCredentialImage(credentialOffer.type),
       proof: {
         type: "XrplSecp256k1Signature2019",
         created: new Date().toISOString(),
-        verificationMethod: `${credentialOffer.holder}#keys-1`,
+        verificationMethod: `${credentialOffer.subject}#keys-1`,
         proofPurpose: "assertionMethod",
         proofValue: signature,
       },
     };
 
     // Create DID Document URL (simulated)
-    const didDocumentUrl = `https://did.example.com/credential/${credentialOffer.id}`;
+    const didDocumentUrl = `https://did.example.com/credential/${credentialOffer.id}`; // TODO Set to the app origin
 
     // Store credential in localStorage (client-side storage will be handled in the frontend)
     const storedCredential = {

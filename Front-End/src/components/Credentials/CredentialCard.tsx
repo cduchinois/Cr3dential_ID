@@ -9,26 +9,35 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { StoredCredential } from '@/types/credential';
 
 function CredentialCard({ credential }: { credential: StoredCredential }) {
   // Get display name based on credential type
   const getCredentialName = (credential: StoredCredential) => {
-    const type = credential.type[credential.type.length - 1];
-    return type
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    return credential.credentialSubject?.name || credential.typeLabel || credential.type;
   };
 
   // Get issuer display name
-  const getIssuerName = (issuerDid: string) => {
-    const issuerMap: Record<string, string> = {
-      'did:xrp:1:1234567890': 'XRPL Commons',
-      // Add other issuer mappings as needed
-    };
-    return issuerMap[issuerDid] || issuerDid;
+  const getIssuerName = (issuerDid: string, maxCharacters: number = 0) => {
+    const [issuerName, setIssuerName] = useState(issuerDid);
+
+    useEffect(() => {
+      fetch('/api/issuers')
+        .then(res => res.json())
+        .then((data: any) => {
+          const issuer = data.issuers.find((i: any) => i.did === issuerDid);
+          if (issuer) {
+            setIssuerName(issuer.name);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching issuer data:', err);
+        });
+    }, [issuerDid]);
+
+    return maxCharacters > 0 && issuerName.length > maxCharacters ? issuerName.substring(0, maxCharacters) + '...' : issuerName;
   };
 
   return (
@@ -43,13 +52,15 @@ function CredentialCard({ credential }: { credential: StoredCredential }) {
       >
         <div
           style={{
-            backgroundColor: '#fff',
+            backgroundColor: '#ededed',
             width: '100px',
             height: '100px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '8px',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
           <Image
@@ -58,7 +69,9 @@ function CredentialCard({ credential }: { credential: StoredCredential }) {
             width={100}
             height={100}
             style={{
-              objectFit: 'contain',
+              objectFit: 'contain', // Changed from 'cover' to 'contain' to preserve aspect ratio
+              maxWidth: '100%',
+              maxHeight: '100%',
               borderRadius: '8px',
             }}
           />
@@ -69,10 +82,20 @@ function CredentialCard({ credential }: { credential: StoredCredential }) {
           }}
         >
           <Typography>
-            {credential.typeLabel || getCredentialName(credential)}
+            {getCredentialName(credential)}
           </Typography>
-          <Typography color='text.secondary'>
-            {getIssuerName(credential.issuer)}
+          <Typography
+            color='text.secondary'
+            variant='body2'
+            sx={{
+              fontSize: '0.875rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '100%'
+            }}
+          >
+            {getIssuerName(credential.issuer, 24)}
           </Typography>
           <Typography variant='caption' color='text.secondary'>
             Issued: {new Date(credential.issuanceDate).toLocaleDateString()}

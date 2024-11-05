@@ -1,37 +1,27 @@
-import { StaticImageData } from "next/image";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
   credentialOfferData,
   credentialOfferTypes,
 } from "@/app/api/credentials/credentials";
-import logo42 from "@/assets/423918.logowik.com.webp";
-import easyALogo from "@/assets/uBaka3Xr_400x400.jpg";
-import xrpLogo from "@/assets/xrp-xrp-logo-CBBF77A5CF-seeklogo.com.webp";
-import futureverseLogo from "@/assets/futureverse.png";
+import { CredentialOffer } from "@/app/credential-app/credential-offer/page";
 
 export async function POST(request: NextRequest) {
-  // Default images for different credential types
-  const DEFAULT_IMAGES: Record<string, string | StaticImageData> = {
-    "identity-m": `${request.nextUrl.origin}/images/identity-male.png`,
-    "identity-f": `${request.nextUrl.origin}/images/identity-female.png`,
-    "42-software-engineering": logo42,
-    "easya-training": easyALogo,
-    "xrpl-training": xrpLogo,
-    "futureverse-training-dev": futureverseLogo,
-    default: `${request.nextUrl.origin}/images/default-credential.png`,
-  };
-
   try {
     // Parse request body
     const body = await request.json();
     const { did, email, type } = body;
 
     // Validate required fields
-    if (!did || !email || !type) {
+    const missingFields = [];
+    if (!did) missingFields.push("did");
+    if (!email) missingFields.push("email");
+    if (!type) missingFields.push("type");
+
+    if (missingFields.length > 0) {
       return NextResponse.json(
         {
-          error: "Missing required fields: did, email and type",
+          error: `Missing required fields: ${missingFields.join(", ")}`,
         },
         { status: 400 }
       );
@@ -45,19 +35,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Create credential offer object
-    const credentialOffer = {
+    const credentialOffer: CredentialOffer = {
       id: crypto.randomUUID(),
-      type: type,
-      typeLabel: credentialOfferData[type].type,
-      image: DEFAULT_IMAGES[type] || DEFAULT_IMAGES.default,
-      issuer: "did:xrp:1:1234567890", // TODO: Import from config
-      holder: did,
-      issuanceDate: new Date().toISOString(),
-      expirationDate: new Date(
-        Date.now() + 365 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 365 days from now
-      status: "pending",
-      fields: credentialOfferData[type].fields,
+      type: credentialOfferData[type].type,
+      issuer: credentialOfferData[type].issuer,
+      credentialSubject: {
+        did,
+        ...credentialOfferData[type].fields,
+      },
+      credentialSchema: [
+        {
+          id: type,
+          type: "JsonSchema",
+        },
+      ],
+      validFrom: new Date().toISOString(),
+      validUntil: credentialOfferData[type].expiresInDays
+        ? new Date(
+            Date.now() +
+              credentialOfferData[type].expiresInDays * 24 * 60 * 60 * 1000
+          ).toISOString()
+        : undefined,
+      image: credentialOfferData[type].image,
+      status: "pending-approval",
     };
 
     return NextResponse.json({

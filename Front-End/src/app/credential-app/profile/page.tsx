@@ -21,7 +21,7 @@ import { NetworkType, getCurrentNetwork, setCurrentNetwork } from '@/lib/network
 export default function ProfilePage() {
   const { isLogged, userWallet, needsFunding, getDid } = useWeb3Auth();
   const [network, setNetwork] = useState<NetworkType>(getCurrentNetwork());
-  const [hasDid, setHasDid] = useState<boolean>(false);
+  const [did, setDid] = useState<string|null>(null)
 
   const getWalletStatus = () => {
     if (!isLogged) return 'Not Connected';
@@ -49,10 +49,10 @@ export default function ProfilePage() {
       if (isLogged && userWallet?.address) {
         const did = await getDid(userWallet.address);
         if (did) {
-          localStorage.setItem(`did_${userWallet.address}`, did);
-          setHasDid(true);
+          localStorage.setItem(`did`, did);
+          setDid(did);
         } else {
-          setHasDid(false);
+          setDid(null);
         }
       }
     };
@@ -104,18 +104,18 @@ export default function ProfilePage() {
           </Box>
         </Box>
 
-        {isLogged && userWallet && !hasDid && (
+        {isLogged && userWallet && !did && (
           <>
             <Divider sx={{ my: 2 }} />
             <ClaimDID />
           </>
         )}
 
-        {isLogged && userWallet && hasDid && (
+        {isLogged && userWallet && !!did && (
           <>
             <Divider sx={{ my: 2 }} />
-            <Typography>
-              DID already claimed for this wallet
+            <Typography sx={{ mb: 1, fontSize: '0.875rem', wordBreak: 'break-all' }}>
+              {did}
             </Typography>
           </>
         )}

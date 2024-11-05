@@ -1,35 +1,52 @@
+import { StaticImageData } from "next/image";
+
+import logo42 from "@/assets/423918.logowik.com.webp";
+import easyALogo from "@/assets/uBaka3Xr_400x400.jpg";
+import futureverseLogo from "@/assets/futureverse.png";
+import xrpLogo from "@/assets/xrp-xrp-logo-CBBF77A5CF-seeklogo.com.webp";
+
 export const credentialOfferData: {
   [key: string]: {
+    issuer: string;
     type: string;
     fields: { [key: string]: string | number };
+    expiresInDays?: number;
+    image?: string | StaticImageData;
   };
 } = {
   "42-software-engineering": {
-    type: "Training",
+    issuer: "did:xrp:1:r42sgvxEQnKQsj8ZYhPYrur54EH1iwAivM",
+    type: "training",
     fields: {
-      Name: "Software Engineering",
-      Provider: "42",
-      Location: "Paris, France",
+      name: "Software Engineering",
+      provider: "42",
+      location: "Paris, France",
     },
+    image: logo42,
   },
   "easya-training": {
-    type: "Training",
+    issuer: "did:xrp:1:rEABey99Sy7nohSEp9hWxjHMjUDSsBxeXi",
+    type: "training",
     fields: {
-      Name: "Blockchain Basis",
-      Provider: "EasyA",
-      Location: "Paris, France",
+      name: "Blockchain Basis",
+      provider: "EasyA",
+      location: "Paris, France",
     },
+    image: easyALogo,
   },
   "futureverse-training-dev": {
-    type: "Training",
+    issuer: "did:xrp:1:rUhRUukKmFk18Tuujc5hiT2iQ6NdBBjo7x",
+    type: "training",
     fields: {
-      Name: "Developer Training",
-      Provider: "Futureverse",
-      Location: "Paris, France",
+      name: "Developer Training",
+      provider: "Futureverse",
+      location: "Paris, France",
     },
+    image: futureverseLogo,
   },
   "identity-m": {
-    type: "Identity",
+    issuer: "did:xrp:1:rHUy4Vuc4J1sgkijpFt8QvWH9kjhksVP7y",
+    type: "identity",
     fields: {
       title: "Monsieur",
       firstName: "Jean-Pierre",
@@ -47,9 +64,11 @@ export const credentialOfferData: {
       passportNumber: "19AF78901",
       issuingCountry: "France",
     },
+    image: "/images/cr3dential.png",
   },
   "identity-f": {
-    type: "Identity",
+    issuer: "did:xrp:1:rHUy4Vuc4J1sgkijpFt8QvWH9kjhksVP7y",
+    type: "identity",
     fields: {
       title: "Madame",
       firstName: "Marie",
@@ -67,14 +86,17 @@ export const credentialOfferData: {
       passportNumber: "20BG45678",
       issuingCountry: "France",
     },
+    image: "/images/cr3dential.png",
   },
   "xrpl-training": {
-    type: "Training",
+    issuer: "did:xrp:1:r4JWSRAf1wSojHg7JEf6H9JT4eJ6tajHui",
+    type: "training",
     fields: {
-      Name: "XRP Legder Fundamentals",
-      Provider: "XRPL Commons",
-      Location: "Paris, France",
+      name: "XRP Legder Fundamentals",
+      provider: "XRPL Commons",
+      location: "Paris, France",
     },
+    image: xrpLogo,
   },
 };
 

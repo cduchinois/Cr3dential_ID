@@ -11,6 +11,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import Image, { StaticImageData } from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -35,17 +36,19 @@ import { StoredDIDDocument } from '@/types/did';
  * @property status - Current status of the credential offer
  * @property fields - Key-value pairs of additional credential fields
  */
-interface CredentialOffer {
+export interface CredentialOffer {
   id: string;
   type: string;
-  typeLabel?: string;
-  image?: string;
   issuer: string;
-  holder: string;
-  issuanceDate: string;
-  expirationDate: string;
+  credentialSchema: {
+    id: string;
+    type: string;
+  }[];
+  credentialSubject: Record<string, string>;
+  validFrom: string;
+  validUntil?: string;
   status: string;
-  fields: Record<string, string>;
+  image?: string | StaticImageData;
 }
 
 export default function CredentialRequestPage() {
@@ -67,7 +70,7 @@ export default function CredentialRequestPage() {
     }
 
     // TODO: Get these values from your authentication context
-    const did = localStorage.getItem(`did_${userWallet?.address}`) || '';
+    const did = localStorage.getItem(`did`) || '';
     const email = 'user@example.com';
 
     fetch('/api/credentials/requests', {
@@ -98,7 +101,7 @@ export default function CredentialRequestPage() {
 
       const challenge = `${credentialOffer?.id}-${crypto.randomUUID()}`;
       const signature = 'test'; //await xrplProvider?.signMessage(challenge);
-      const did = localStorage.getItem(`did_${userWallet?.address}`) || '';
+      const did = localStorage.getItem(`did`) || '';
 
       const response = await fetch('/api/credentials/offers', {
         method: 'POST',
@@ -228,6 +231,24 @@ export default function CredentialRequestPage() {
     });
   };
 
+  const issuerDetails = (credentialOffer: CredentialOffer) => {
+    const details = [
+      { label: 'Type', value: credentialOffer.type },
+      { label: 'Issuer', value: credentialOffer.issuer },
+      {
+        label: 'Issue Date',
+        value: formatDate(credentialOffer.validFrom),
+      },
+    ];
+    if (credentialOffer.validUntil) {
+      details.push({
+        label: 'Expiration Date',
+        value: formatDate(credentialOffer.validUntil),
+      });
+    }
+    return details;
+  };
+
   return (
     <Box sx={{ p: 2, maxWidth: '800px', margin: '0 auto' }}>
       <Typography
@@ -249,46 +270,53 @@ export default function CredentialRequestPage() {
           backdropFilter: 'blur(10px)',
           boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
+          position: 'relative',
         }}
       >
+        {credentialOffer.image && (
+          <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+            <Image
+              src={credentialOffer.image}
+              alt="Credential issuer logo"
+              width={42}
+              height={42}
+              style={{
+                borderRadius: '4px',
+                objectFit: 'contain'
+              }}
+            />
+          </Box>
+        )}
         <CardContent>
-          <Typography
-            variant='h6'
-            gutterBottom
-            sx={{
-              color: '#fff',
-              fontWeight: 500,
-            }}
-          >
-            Issuer Details
-          </Typography>
-          <Box sx={{ display: 'grid', gap: 2 }}>
-            {[
-              { label: 'Type', value: credentialOffer.type },
-              { label: 'Issuer', value: credentialOffer.issuer },
-              {
-                label: 'Issue Date',
-                value: formatDate(credentialOffer.issuanceDate),
-              },
-              {
-                label: 'Expiration Date',
-                value: formatDate(credentialOffer.expirationDate),
-              },
-            ].map(({ label, value }) => (
-              <Box key={label}>
-                <Typography
-                  variant='subtitle2'
-                  sx={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    mb: 0.5,
-                    fontWeight: 500,
-                  }}
-                >
-                  {label}
-                </Typography>
-                <Typography sx={{ color: '#fff' }}>{value}</Typography>
-              </Box>
-            ))}
+          <Box>
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant='h6'
+                sx={{
+                  color: '#fff',
+                  fontWeight: 500,
+                }}
+              >
+                Issuer Details
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'grid', gap: 2 }}>
+              {issuerDetails(credentialOffer).map(({ label, value }) => (
+                <Box key={label}>
+                  <Typography
+                    variant='subtitle2'
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      mb: 0.5,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {label}
+                  </Typography>
+                  <Typography sx={{ color: '#fff' }}>{value}</Typography>
+                </Box>
+              ))}
+            </Box>
           </Box>
         </CardContent>
       </Card>
@@ -314,7 +342,9 @@ export default function CredentialRequestPage() {
             Content
           </Typography>
           <Box sx={{ display: 'grid', gap: 2 }}>
-            {Object.entries(credentialOffer.fields).map(([key, value]) => (
+            {Object.entries(credentialOffer.credentialSubject).filter(
+              ([key]) => key !== 'did'
+            ).map(([key, value]) => (
               <Box key={key}>
                 <Typography
                   variant='subtitle2'
@@ -372,7 +402,7 @@ export default function CredentialRequestPage() {
                   wordBreak: 'break-all',
                 }}
               >
-                {credentialOffer.holder}
+                {credentialOffer.credentialSubject.did}
               </Typography>
             </Box>
           </Stack>
