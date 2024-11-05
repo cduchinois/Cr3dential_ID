@@ -1,38 +1,29 @@
 'use client';
 
-import { Divider, Paper, Stack } from '@mui/material';
+import { Box, Container, useMediaQuery, useTheme } from '@mui/material';
+import { ReactNode } from 'react';
 
-import Navbar from './NavBar';
-import TopBar from './TopBar';
-function MainContainer({
-  children,
-  isMobile,
-}: {
-  children: React.ReactNode;
-  isMobile?: boolean;
-}) {
-  return (
-    <Paper
-      elevation={8}
-      sx={{
-        p: 0,
-        height: isMobile ? '100%' : '780px',
-        width: isMobile ? '100%' : '400px',
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: isMobile ? '0px' : '50px',
-        backgroundColor: 'background.default',
-      }}
-    >
-      <TopBar />
-      <Divider />
-      <Stack flexGrow={1} p={4} height='1px'>
-        {children}
-      </Stack>
-      <Divider />
-      <Navbar />
-    </Paper>
-  );
+interface MainContainerProps {
+  children: ReactNode;
 }
 
-export default MainContainer;
+export default function MainContainer({ children }: MainContainerProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return (
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        pt: isMobile ? '56px' : '64px', // Adjust top padding based on mobile/desktop
+        minHeight: '100vh',
+        backgroundColor: '#f5f5f5',
+      }}
+    >
+      <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 3 }}>
+        {children}
+      </Container>
+    </Box>
+  );
+}
