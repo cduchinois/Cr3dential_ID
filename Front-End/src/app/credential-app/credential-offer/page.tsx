@@ -69,7 +69,7 @@ export default function CredentialRequestPage() {
       return;
     }
 
-    // TODO: Get these values from your authentication context
+    // Continue with credential offer fetch
     const did = localStorage.getItem(`did`) || '';
     const email = 'user@example.com';
 
@@ -80,11 +80,31 @@ export default function CredentialRequestPage() {
       },
       body: JSON.stringify({ did, email, type }),
     })
-      .then((res) => res.json())
+      .then((response) => response.json())
       .then((data) => {
         if (data.error) {
           throw new Error(data.error);
         }
+
+        // Check for existing credentials first
+        const existingCredentials = JSON.parse(
+          localStorage.getItem('credentials') || '[]'
+        ) as StoredCredential[];
+
+        const hasCredential = existingCredentials.some((credential) =>
+          credential.type.some((type) =>
+            type
+              .toLowerCase()
+              .includes(`${data.credentialOffer.type}Credential`.toLowerCase())
+          )
+        );
+
+        if (hasCredential) {
+          toast.warning('You have already claimed this credential');
+          router.push('/credential-app/credentials');
+          return;
+        }
+
         setCredentialOffer(data.credentialOffer);
       })
       .catch((err) => {
@@ -93,7 +113,7 @@ export default function CredentialRequestPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const handleAccept = async () => {
     try {
@@ -277,12 +297,12 @@ export default function CredentialRequestPage() {
           <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
             <Image
               src={credentialOffer.image}
-              alt="Credential issuer logo"
+              alt='Credential issuer logo'
               width={42}
               height={42}
               style={{
                 borderRadius: '4px',
-                objectFit: 'contain'
+                objectFit: 'contain',
               }}
             />
           </Box>
@@ -342,25 +362,25 @@ export default function CredentialRequestPage() {
             Content
           </Typography>
           <Box sx={{ display: 'grid', gap: 2 }}>
-            {Object.entries(credentialOffer.credentialSubject).filter(
-              ([key]) => key !== 'did'
-            ).map(([key, value]) => (
-              <Box key={key}>
-                <Typography
-                  variant='subtitle2'
-                  sx={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    mb: 0.5,
-                    fontWeight: 500,
-                  }}
-                >
-                  {key
-                    .replace(/([A-Z])/g, ' $1')
-                    .replace(/^./, (str) => str.toUpperCase())}
-                </Typography>
-                <Typography sx={{ color: '#fff' }}>{value}</Typography>
-              </Box>
-            ))}
+            {Object.entries(credentialOffer.credentialSubject)
+              .filter(([key]) => key !== 'did')
+              .map(([key, value]) => (
+                <Box key={key}>
+                  <Typography
+                    variant='subtitle2'
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      mb: 0.5,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {key
+                      .replace(/([A-Z])/g, ' $1')
+                      .replace(/^./, (str) => str.toUpperCase())}
+                  </Typography>
+                  <Typography sx={{ color: '#fff' }}>{value}</Typography>
+                </Box>
+              ))}
           </Box>
         </CardContent>
       </Card>
