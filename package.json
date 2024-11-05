@@ -1,0 +1,6 @@
+{
+    "dependencies": {
+        "xrpl": "2.14.1",
+        "@web3auth/xrpl-provider": "8.12.4"
+    }
+} 
