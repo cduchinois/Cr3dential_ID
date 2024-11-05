@@ -3,9 +3,10 @@ import { Web3Auth } from '@web3auth/modal';
 import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
 import { XrplPrivateKeyProvider } from '@web3auth/xrpl-provider';
 
+//BD7NISfuA-_b-HCiIwKYM5XmBvE4c0LJrq_FY3X1iu3mk_rq082-jlF3hgbRpypEKyFvlJ15DGNEYDlTF4fgLOo
 const clientId =
-  process.env.NEXT_PUBLIC_WEB3_AUTH_CLIENT_ID ||
-  'BD7NISfuA-_b-HCiIwKYM5XmBvE4c0LJrq_FY3X1iu3mk_rq082-jlF3hgbRpypEKyFvlJ15DGNEYDlTF4fgLOo';
+  process.env.NEXT_PUBLIC_WEB3_AUTH_CLIENT_ID;
+
 
 export const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.XRPL,
