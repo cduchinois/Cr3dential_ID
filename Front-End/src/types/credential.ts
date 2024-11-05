@@ -1,7 +1,7 @@
 export interface W3CCredential {
   '@context': string[];
+  id: string;
   type: string[];
-  typeLabel?: string;
   issuer: string;
   issuanceDate: string;
   credentialSubject: {
@@ -19,6 +19,5 @@ export interface W3CCredential {
 }
 
 export interface StoredCredential extends W3CCredential {
-  id: string;
   status: 'active' | 'revoked' | 'expired';
 }

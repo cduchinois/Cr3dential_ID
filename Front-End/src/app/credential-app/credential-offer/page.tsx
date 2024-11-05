@@ -27,7 +27,6 @@ import { StoredDIDDocument } from '@/types/did';
  * Represents a credential offer with its properties
  * @property id - Unique identifier for the credential offer
  * @property type - The type of credential being offered
- * @property typeLabel - Optional display label for the credential type
  * @property image - Optional image URL associated with the credential
  * @property issuer - The DID of the credential issuer
  * @property holder - The DID of the intended credential holder

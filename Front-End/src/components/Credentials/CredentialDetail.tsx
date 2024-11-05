@@ -51,7 +51,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
             flexGrow: 1,
           }}
         >
-          {credential.typeLabel || credential.type[credential.type.length - 1]}
+          {credential.type[credential.type.length - 1]}
         </Typography>
         <Chip
           label={credential.status.toUpperCase()}

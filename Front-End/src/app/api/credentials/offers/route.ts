@@ -5,6 +5,15 @@ import { credentialOfferData, credentialOfferTypes } from "../credentials";
 import { W3CCredential } from "@/types/credential";
 import { GET as getIssuerMetadata } from "../../issuers/route";
 
+// Add Pinata configuration
+const PINATA_API_KEY = process.env.PINATA_API_KEY;
+const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
+const PINATA_JWT = process.env.PINATA_JWT;
+
+if (!PINATA_JWT) {
+  console.warn("Missing PINATA_JWT environment variable");
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -79,8 +88,14 @@ export async function POST(request: NextRequest) {
         "https://www.w3.org/2018/credentials/v1",
         "https://www.w3.org/2018/credentials/examples/v1",
       ],
-      type: ["VerifiableCredential", `${credentialOffer.type}Credential`],
-      typeLabel: credentialData.type,
+      id: credentialOffer.id,
+      type: [
+        "VerifiableCredential",
+        `${
+          credentialOffer.type.charAt(0).toUpperCase() +
+          credentialOffer.type.toLowerCase().slice(1)
+        }Credential`,
+      ],
       issuer: (await (await getIssuerMetadata(request)).json()).issuers[0].did,
       issuanceDate: new Date().toISOString(),
       credentialSubject: {
@@ -97,26 +112,53 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Create DID Document URL (simulated)
-    const didDocumentUrl = `https://did.example.com/credential/${credentialOffer.id}`; // TODO Set to the app origin
+    // Upload credential to Pinata
+    const pinataResponse = await fetch(
+      "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${PINATA_JWT}`,
+        },
+        body: JSON.stringify({
+          pinataContent: w3cCredential,
+          pinataMetadata: {
+            name: `${w3cCredential.type[1]}-${Date.now()}`,
+          },
+        }),
+      }
+    );
 
-    // Store credential in localStorage (client-side storage will be handled in the frontend)
+    if (!pinataResponse.ok) {
+      throw new Error("Failed to upload credential to IPFS");
+    }
+
+    const pinataData = await pinataResponse.json();
+    const ipfsHash = pinataData.IpfsHash;
+
+    // Create DID Document URL using IPFS hash
+    const didDocumentUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+
+    // Store credential with IPFS reference
     const storedCredential = {
-      id: crypto.randomUUID(),
       ...w3cCredential,
       status: "active",
+      ipfsHash,
+      didDocumentUrl,
     };
 
     return NextResponse.json(
       {
         success: true,
-        message: "Credential created successfully",
+        message: "Credential created and uploaded successfully",
         credential: storedCredential,
         didDocumentUrl,
       },
       { status: 202 }
     );
   } catch (error) {
+    console.error("Error processing credential offer:", error);
     return NextResponse.json(
       { error: `Failed to process credential offer: ${error}` },
       { status: 500 }

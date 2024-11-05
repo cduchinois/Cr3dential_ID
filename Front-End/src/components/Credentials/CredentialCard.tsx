@@ -16,7 +16,7 @@ import { StoredCredential } from '@/types/credential';
 function CredentialCard({ credential }: { credential: StoredCredential }) {
   // Get display name based on credential type
   const getCredentialName = (credential: StoredCredential) => {
-    return credential.credentialSubject?.name || credential.typeLabel || credential.type;
+    return credential.credentialSubject?.name || credential.type;
   };
 
   // Get issuer display name
