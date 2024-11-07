@@ -109,9 +109,8 @@ export default class XrplRPC {
     }
   };
 
-  signMessage = async (): Promise<any> => {
+  signMessage = async (msg: string): Promise<any> => {
     try {
-      const msg = "Hello world";
       const hexMsg = convertStringToHex(msg);
       const txSign = await this.provider.request<{ signature: string }, never>({
         method: "xrpl_signMessage",

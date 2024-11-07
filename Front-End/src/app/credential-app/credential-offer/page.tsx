@@ -16,10 +16,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+// Add import for XrplRPC
+import XrplRPC from '@/lib/xrpl-rpc';
 import { useWeb3Auth } from '@/hooks/useWeb3Auth';
 
 // import { xrplProvider } from '../../../lib/web3Auth';
-
 import { StoredCredential } from '@/types/credential';
 import { StoredDIDDocument } from '@/types/did';
 
@@ -53,7 +54,7 @@ export interface CredentialOffer {
 export default function CredentialRequestPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { userWallet } = useWeb3Auth();
+  const { isLogged, userWallet, provider } = useWeb3Auth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [credentialOffer, setCredentialOffer] =
@@ -116,10 +117,22 @@ export default function CredentialRequestPage() {
 
   const handleAccept = async () => {
     try {
+      if (!isLogged) {
+        toast.error('Please log in to accept this credential');
+        return;
+      }
+
       setIsProcessing(true);
 
+      // Initialize XrplRPC with the user's wallet provider
+      if (!provider) {
+        throw new Error('Wallet provider not found');
+      }
+      const xrplRpc = new XrplRPC(provider);
+
       const challenge = `${credentialOffer?.id}-${crypto.randomUUID()}`;
-      const signature = 'test'; //await xrplProvider?.signMessage(challenge);
+      // Use the XrplRPC signMessage function
+      const signature = await xrplRpc.signMessage(challenge);
       const did = localStorage.getItem(`did`) || '';
 
       const response = await fetch('/api/credentials/offers', {
@@ -140,11 +153,21 @@ export default function CredentialRequestPage() {
         throw new Error(data.error || 'Failed to accept credential offer');
       }
 
+      // Update the DID Document URL on XRPL using DIDSet
+      const didSetResult = await xrplRpc.signAndSetDid(data.didDocumentUrl);
+
+      if (!didSetResult?.success) {
+        throw new Error('Failed to update DID Document URL on XRPL');
+      }
+
+      console.log('didSetResult', didSetResult);
+
       // Generate a unique ID for the credential
       const credentialId = crypto.randomUUID();
       const storedCredential = {
         ...data.credential,
         id: credentialId,
+        didSetTxHash: didSetResult.txHash, // Store the transaction hash
       };
 
       // Store credential
@@ -460,7 +483,7 @@ export default function CredentialRequestPage() {
           variant='contained'
           size='large'
           onClick={handleAccept}
-          disabled={isProcessing}
+          disabled={isProcessing || !isLogged}
           sx={{
             minWidth: '120px',
             backgroundColor: '#4caf50',

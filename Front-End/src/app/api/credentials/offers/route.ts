@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           pinataContent: w3cCredential,
           pinataMetadata: {
-            name: `${w3cCredential.type[1]}-${Date.now()}`,
+            name: `${w3cCredential.id}`,
           },
         }),
       }
