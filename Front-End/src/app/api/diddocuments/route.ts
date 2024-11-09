@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
       credentialSubject: {
         ...didDocument.credentialSubject,
         credentials: [
-          ...(didDocument.credentialSubject?.credentials || []),
           credentialHash,
+          ...(didDocument.credentialSubject?.credentials || []),
         ],
       },
     };
