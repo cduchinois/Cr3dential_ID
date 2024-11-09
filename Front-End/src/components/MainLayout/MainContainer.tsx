@@ -16,8 +16,8 @@ function MainContainer({
       elevation={8}
       sx={{
         p: 0,
-        height: isMobile ? '100%' : '780px',
-        width: isMobile ? '100%' : '400px',
+        height: isMobile ? '100vh' : '780px',
+        width: isMobile ? '100vw' : '400px',
         display: 'flex',
         flexDirection: 'column',
         borderRadius: isMobile ? '0px' : '50px',
