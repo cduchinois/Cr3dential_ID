@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Wallet } from "xrpl";
 
 import {
   credentialOfferData,
   credentialOfferTypes,
 } from "@/app/api/credentials/credentials";
 import { CredentialOffer } from "@/app/credential-app/credential-offer/page";
+
+const ISSUER_SEED = process.env.ISSUER_SEED;
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,11 +37,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate issuer private key
+    if (!ISSUER_SEED) {
+      throw new Error("Missing ISSUER_SEED environment variable");
+    }
+
+    // Create issuer wallet from private key
+    const issuerWallet = Wallet.fromSeed(ISSUER_SEED);
+
     // Create credential offer object
     const credentialOffer: CredentialOffer = {
       id: crypto.randomUUID(),
       type: credentialOfferData[type].type,
-      issuer: credentialOfferData[type].issuer,
+      issuer: issuerWallet.classicAddress,
       credentialSubject: {
         did,
         ...credentialOfferData[type].fields,

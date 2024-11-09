@@ -4,7 +4,6 @@ import { getUrl } from "@/lib/utils";
 
 export const credentialOfferData: {
   [key: string]: {
-    issuer: string;
     type: string;
     fields: { [key: string]: string | number };
     expiresInDays?: number;
@@ -12,7 +11,6 @@ export const credentialOfferData: {
   };
 } = {
   "42-software-engineering": {
-    issuer: "did:xrp:1:r42sgvxEQnKQsj8ZYhPYrur54EH1iwAivM",
     type: "training",
     fields: {
       name: "Software Engineering",
@@ -22,7 +20,6 @@ export const credentialOfferData: {
     image: getUrl("/images/logo-42.webp"),
   },
   "easya-training": {
-    issuer: "did:xrp:1:rEABey99Sy7nohSEp9hWxjHMjUDSsBxeXi",
     type: "training",
     fields: {
       name: "Blockchain Basis",
@@ -32,7 +29,6 @@ export const credentialOfferData: {
     image: getUrl("/images/logo-easya.jpg"),
   },
   "futureverse-training-dev": {
-    issuer: "did:xrp:1:rUhRUukKmFk18Tuujc5hiT2iQ6NdBBjo7x",
     type: "training",
     fields: {
       name: "Developer Training",
@@ -42,7 +38,6 @@ export const credentialOfferData: {
     image: getUrl("/images/logo-futureverse.png"),
   },
   "identity-m": {
-    issuer: "did:xrp:1:rHUy4Vuc4J1sgkijpFt8QvWH9kjhksVP7y",
     type: "identity",
     fields: {
       title: "Monsieur",
@@ -64,7 +59,6 @@ export const credentialOfferData: {
     image: getUrl("/images/logo-cr3dential.png"),
   },
   "identity-f": {
-    issuer: "did:xrp:1:rHUy4Vuc4J1sgkijpFt8QvWH9kjhksVP7y",
     type: "identity",
     fields: {
       title: "Madame",
@@ -86,7 +80,6 @@ export const credentialOfferData: {
     image: getUrl("/images/logo-cr3dential.png"),
   },
   "xrpl-training": {
-    issuer: "did:xrp:1:r4JWSRAf1wSojHg7JEf6H9JT4eJ6tajHui",
     type: "training",
     fields: {
       name: "XRP Legder Fundamentals",
@@ -96,7 +89,6 @@ export const credentialOfferData: {
     image: getUrl("/images/logo-xrpl.webp"),
   },
   "xrpl-commons-education-week": {
-    issuer: "did:xrp:1:r4JWSRAf1wSojHg7JEf6H9JT4eJ6tajHui",
     type: "training",
     fields: {
       name: "XRPL Commons Education Week",
