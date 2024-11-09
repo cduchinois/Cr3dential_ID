@@ -1,10 +1,10 @@
 import { StaticImageData } from "next/image";
 import { NextRequest, NextResponse } from "next/server";
 
-import easyALogo from "@/assets/uBaka3Xr_400x400.jpg";
-import futureverseLogo from "@/assets/futureverse.png";
 import logo42 from "@/assets/423918.logowik.com.webp";
-// import xrpLogo from "@/assets/xrp-xrp-logo-CBBF77A5CF-seeklogo.com.webp";
+import futureverseLogo from "@/assets/futureverse.png";
+import easyALogo from "@/assets/uBaka3Xr_400x400.jpg";
+import xrpLogo from "@/assets/xrp-xrp-logo-CBBF77A5CF-seeklogo.com.webp";
 
 interface IssuerMetadata {
   did?: string;
