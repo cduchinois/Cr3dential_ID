@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       proof: {
         type: "XrplSecp256k1Signature2019",
         created: new Date().toISOString(),
-        verificationMethod: `${credentialOffer.subject}#keys-1`,
+        verificationMethod: `${did}#keys-1`,
         proofPurpose: "assertionMethod",
         proofValue: signature,
       },
