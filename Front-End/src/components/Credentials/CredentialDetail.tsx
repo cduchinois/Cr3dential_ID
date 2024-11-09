@@ -10,8 +10,9 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 
-import { StoredCredential } from '@/types/credential';
 import CredentialFields from './CredentialFields';
+
+import { StoredCredential } from '@/types/credential';
 
 interface CredentialDetailProps {
   credential: StoredCredential;
@@ -51,7 +52,10 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
             flexGrow: 1,
           }}
         >
-          {credential.type[credential.type.length - 1]}
+          {credential.type[credential.type.length - 1].endsWith('Credential')
+            ? credential.type[credential.type.length - 1].replace('Credential', '')
+            : credential.type[credential.type.length - 1]
+          }
         </Typography>
         <Chip
           label={credential.status.toUpperCase()}
@@ -77,12 +81,16 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
             gutterBottom
             sx={{ color: '#fff', fontWeight: 500 }}
           >
-            Credential Information
+            Information
           </Typography>
           <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
           <CredentialFields
             type={credential.type[credential.type.length - 1]}
-            fields={credential.credentialSubject}
+            fields={Object.fromEntries(
+              Object.entries(credential.credentialSubject).filter(
+                ([key]) => key !== 'did'
+              )
+            )}
           />
         </CardContent>
       </Card>
@@ -102,7 +110,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
             gutterBottom
             sx={{ color: '#fff', fontWeight: 500 }}
           >
-            Issuer Details
+            Issuer
           </Typography>
           <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
           <Stack spacing={3} alignItems='center'>
@@ -134,7 +142,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
                   variant='subtitle2'
                   sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.5 }}
                 >
-                  Issuer
+                  DID
                 </Typography>
                 <Typography sx={{ color: '#fff' }}>
                   {credential.issuer}
@@ -206,10 +214,11 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
                   wordBreak: 'break-all',
                 }}
               >
-                {credential.credentialSubject.id}
+                {credential.credentialSubject.did}
               </Typography>
             </Box>
-            {credential.proof && (
+            {/* TODO: Add verification method */}
+            {/* {credential.proof && (
               <Box>
                 <Typography
                   variant='subtitle2'
@@ -231,7 +240,7 @@ function CredentialDetail({ credential }: CredentialDetailProps) {
                   {credential.proof.verificationMethod}
                 </Typography>
               </Box>
-            )}
+            )} */}
           </Stack>
         </CardContent>
       </Card>
