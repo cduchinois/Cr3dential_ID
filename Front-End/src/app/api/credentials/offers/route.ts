@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Client, Wallet } from "xrpl";
+
+import { getNetworkUrl } from "@/lib/networkConfig";
 
 import { credentialOfferData, credentialOfferTypes } from "../credentials";
-
-import { W3CCredential } from "@/types/credential";
 import { GET as getIssuerMetadata } from "../../issuers/route";
 
+import { W3CCredential } from "@/types/credential";
+
+// Add Issuer configuration
+const ISSUER_SEED = process.env.ISSUER_SEED;
+
 // Add Pinata configuration
-const PINATA_API_KEY = process.env.PINATA_API_KEY;
-const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
 const PINATA_JWT = process.env.PINATA_JWT;
 
 if (!PINATA_JWT) {
@@ -57,6 +61,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let client: Client | null = null;
+
   try {
     const body = await request.json();
     const { credentialOffer, challenge, signature } = body;
@@ -72,17 +78,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the credential data based on type
+    // Validate issuer private key
+    if (!ISSUER_SEED) {
+      throw new Error("Missing ISSUER_SEED environment variable");
+    }
+
+    // Create XRPL client and connect
+    client = new Client(getNetworkUrl());
+    await client.connect();
+
+    // Create issuer wallet from private key
+    const issuerWallet = Wallet.fromSeed(ISSUER_SEED);
+    console.log("Issuer wallet created:", issuerWallet.classicAddress);
+
+    // Get credential data and create W3C credential as before
     const credentialData =
       credentialOfferData[credentialOffer.credentialSchema[0].id];
     if (!credentialData) {
-      return NextResponse.json(
-        { error: "Invalid credential type" },
-        { status: 400 }
-      );
+      throw new Error("Invalid credential type");
     }
 
-    // Create W3C Verifiable Credential
+    // Create W3C Credential (existing code...)
     const w3cCredential: W3CCredential = {
       "@context": [
         "https://www.w3.org/2018/credentials/v1",
@@ -112,7 +128,7 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Upload credential to Pinata
+    // Upload to Pinata (existing code...)
     const pinataResponse = await fetch(
       "https://api.pinata.cloud/pinning/pinJSONToIPFS",
       {
@@ -136,24 +152,45 @@ export async function POST(request: NextRequest) {
 
     const pinataData = await pinataResponse.json();
     const ipfsHash = pinataData.IpfsHash;
-
-    // Create DID Document URL using IPFS hash
     const didDocumentUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
 
-    // Store credential with IPFS reference
+    // Create DIDSet transaction
+    const didSetTx = {
+      TransactionType: "DIDSet",
+      Account: issuerWallet.classicAddress,
+      URI: Buffer.from(didDocumentUrl).toString("hex").toUpperCase(),
+      Flags: 0,
+    };
+
+    // Submit DIDSet transaction
+    const didSetResult = await client.submitAndWait(didSetTx, {
+      wallet: issuerWallet,
+    });
+
+    if (didSetResult.result.meta.TransactionResult !== "tesSUCCESS") {
+      throw new Error(
+        `DIDSet failed: ${didSetResult.result.meta.TransactionResult}`
+      );
+    }
+
+    console.log("DIDSet transaction successful:", didSetResult);
+
+    // Store credential with IPFS reference and transaction details
     const storedCredential = {
       ...w3cCredential,
       status: "active",
       ipfsHash,
       didDocumentUrl,
+      didSetTxHash: didSetResult.result.hash,
     };
 
     return NextResponse.json(
       {
         success: true,
-        message: "Credential created and uploaded successfully",
+        message: "Credential created and DID set successfully",
         credential: storedCredential,
         didDocumentUrl,
+        txHash: didSetResult.result.hash,
       },
       { status: 202 }
     );
@@ -163,6 +200,10 @@ export async function POST(request: NextRequest) {
       { error: `Failed to process credential offer: ${error}` },
       { status: 500 }
     );
+  } finally {
+    if (client) {
+      await client.disconnect();
+    }
   }
 }
 

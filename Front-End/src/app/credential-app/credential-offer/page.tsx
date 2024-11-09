@@ -54,7 +54,7 @@ export interface CredentialOffer {
 export default function CredentialRequestPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { isLogged, userWallet, provider } = useWeb3Auth();
+  const { isLogged, provider } = useWeb3Auth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [credentialOffer, setCredentialOffer] =
@@ -131,11 +131,11 @@ export default function CredentialRequestPage() {
       const xrplRpc = new XrplRPC(provider);
 
       const challenge = `${credentialOffer?.id}-${crypto.randomUUID()}`;
-      // Use the XrplRPC signMessage function
       const signature = await xrplRpc.signMessage(challenge);
       const did = localStorage.getItem(`did`) || '';
 
-      const response = await fetch('/api/credentials/offers', {
+      // 1. Create credential and get transaction hash
+      const credentialResponse = await fetch('/api/credentials/offers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,73 +147,68 @@ export default function CredentialRequestPage() {
         }),
       });
 
-      const data = await response.json();
+      const credentialData = await credentialResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to accept credential offer');
+      if (!credentialResponse.ok) {
+        throw new Error(
+          credentialData.error || 'Failed to accept credential offer'
+        );
       }
 
-      // Update the DID Document URL on XRPL using DIDSet
-      const didSetResult = await xrplRpc.signAndSetDid(data.didDocumentUrl);
+      // 2. Fetch current DID Document
+      const didResponse = await fetch(`/api/diddocuments/${did}`);
+      const didData = await didResponse.json();
+
+      if (!didResponse.ok) {
+        throw new Error('Failed to fetch DID document');
+      }
+
+      // 3. Update DID Document with new credential
+      const updateResponse = await fetch('/api/diddocuments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          didDocument: didData.document,
+          credentialHash: credentialData.txHash,
+        }),
+      });
+
+      const updateData = await updateResponse.json();
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update DID document');
+      }
+
+      // 4. Update DID Document URL on XRPL
+      const didSetResult = await xrplRpc.signAndSetDid(
+        updateData.didDocumentUrl
+      );
 
       if (!didSetResult?.success) {
         throw new Error('Failed to update DID Document URL on XRPL');
       }
 
-      console.log('didSetResult', didSetResult);
-
-      // Generate a unique ID for the credential
-      const credentialId = crypto.randomUUID();
-      const storedCredential = {
-        ...data.credential,
-        id: credentialId,
-        didSetTxHash: didSetResult.txHash, // Store the transaction hash
-      };
-
-      // Store credential
+      // Store credential locally
       const existingCredentials = JSON.parse(
         localStorage.getItem('credentials') || '[]'
       ) as StoredCredential[];
+
+      const storedCredential = {
+        ...credentialData.credential,
+        didSetTxHash: didSetResult.txHash,
+      };
+
       existingCredentials.push(storedCredential);
       localStorage.setItem('credentials', JSON.stringify(existingCredentials));
 
-      // Store or update DID Document with credential link
+      // Update local DID Document
       const existingDIDDocs = JSON.parse(
         localStorage.getItem('didDocuments') || '{}'
       ) as Record<string, StoredDIDDocument>;
 
-      if (!existingDIDDocs[did]) {
-        // Create new DID Document if it doesn't exist
-        existingDIDDocs[did] = {
-          '@context': ['https://www.w3.org/ns/did/v1'],
-          id: did,
-          controller: did,
-          verificationMethod: [
-            {
-              id: `${did}#keys-1`,
-              type: 'EcdsaSecp256k1VerificationKey2019',
-              controller: did,
-              publicKeyMultibase: 'test-public-key', // This would come from web3auth in real implementation
-            },
-          ],
-          authentication: [`${did}#keys-1`],
-          assertionMethod: [`${did}#keys-1`],
-          service: [
-            {
-              id: `${did}#credential-service`,
-              type: 'CredentialService',
-              serviceEndpoint: data.didDocumentUrl,
-            },
-          ],
-          linkedCredentials: [credentialId],
-        };
-      } else {
-        // Add credential ID to existing DID Document's linked credentials
-        existingDIDDocs[did].linkedCredentials = [
-          ...new Set([...existingDIDDocs[did].linkedCredentials, credentialId]),
-        ];
-      }
-
+      existingDIDDocs[did] = updateData.document;
       localStorage.setItem('didDocuments', JSON.stringify(existingDIDDocs));
 
       toast.success('Credential has been created and linked successfully');
