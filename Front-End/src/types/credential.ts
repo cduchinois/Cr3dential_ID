@@ -5,7 +5,7 @@ export interface W3CCredential {
   issuer: string;
   issuanceDate: string;
   credentialSubject: {
-    id: string;
+    did: string;
     [key: string]: any;
   };
   image?: string;

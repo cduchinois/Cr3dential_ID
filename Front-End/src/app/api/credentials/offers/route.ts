@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { credentialOffer, challenge, signature } = body;
+    const { credentialOffer, did, challenge, signature } = body;
 
     // Validate required fields
     if (!credentialOffer || !challenge || !signature) {
@@ -113,10 +113,10 @@ export async function POST(request: NextRequest) {
           credentialOffer.type.toLowerCase().slice(1)
         }Credential`,
       ],
-      issuer: (await (await getIssuerMetadata(request)).json()).issuers[0].did,
+      issuer: issuerWallet.classicAddress,
       issuanceDate: new Date().toISOString(),
       credentialSubject: {
-        id: credentialOffer.subject,
+        did,
         ...credentialData.fields,
       },
       image: credentialOffer.image || getCredentialImage(credentialOffer.type),
@@ -210,15 +210,7 @@ export async function POST(request: NextRequest) {
 
 // Helper function to get credential image based on type
 function getCredentialImage(type: string): string {
-  const imageMap: Record<string, string> = {
-    "42-software-engineering": "/images/42-logo.png",
-    "easya-training": "/images/easya-logo.png",
-    "futureverse-training-dev": "/images/futureverse-logo.png",
-    "identity-m": "/images/identity-logo.png",
-    "identity-f": "/images/identity-logo.png",
-    "xrpl-training": "/images/xrpl-logo.png",
-    "xrpl-commons-education-week": "/images/xrpl-logo.png",
-  };
+  const imageMap: Record<string, string> = {};
 
   return `${getUrl(imageMap[type] || "/images/credential.png")}`;
 }

@@ -52,7 +52,7 @@ export async function GET(
           id: did,
           controller: did,
           credentialSubject: {
-            did: did,
+            did,
             credentials: [],
           },
           verificationMethod: [

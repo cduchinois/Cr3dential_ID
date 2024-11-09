@@ -146,6 +146,7 @@ export default function CredentialRequestPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          did,
           credentialOffer,
           challenge,
           signature,
