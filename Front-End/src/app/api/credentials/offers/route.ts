@@ -212,10 +212,11 @@ function getCredentialImage(type: string): string {
   const imageMap: Record<string, string> = {
     "42-software-engineering": "/images/42-logo.png",
     "easya-training": "/images/easya-logo.png",
+    "futureverse-training-dev": "/images/futureverse-logo.png",
     "identity-m": "/images/identity-logo.png",
     "identity-f": "/images/identity-logo.png",
     "xrpl-training": "/images/xrpl-logo.png",
-    "futureverse-training-dev": "/images/futureverse-logo.png",
+    "xrpl-commons-education-week": "/images/xrpl-logo.png",
   };
 
   return imageMap[type] || "/images/default-credential.png";

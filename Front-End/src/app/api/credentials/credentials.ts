@@ -98,6 +98,16 @@ export const credentialOfferData: {
     },
     image: xrpLogo,
   },
+  "xrpl-commons-education-week": {
+    issuer: "did:xrp:1:r4JWSRAf1wSojHg7JEf6H9JT4eJ6tajHui",
+    type: "training",
+    fields: {
+      name: "XRPL Commons Education Week",
+      provider: "XRPL Commons",
+      location: "Paris, France",
+    },
+    image: xrpLogo,
+  },
 };
 
 export const credentialOfferTypes = Object.keys(credentialOfferData);
