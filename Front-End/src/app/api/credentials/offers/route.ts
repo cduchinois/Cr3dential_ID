@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Client, Wallet } from "xrpl";
 
 import { getNetworkUrl } from "@/lib/networkConfig";
+import { getUrl } from "@/lib/utils";
 
 import { credentialOfferData, credentialOfferTypes } from "../credentials";
 import { GET as getIssuerMetadata } from "../../issuers/route";
@@ -219,5 +220,5 @@ function getCredentialImage(type: string): string {
     "xrpl-commons-education-week": "/images/xrpl-logo.png",
   };
 
-  return imageMap[type] || "/images/default-credential.png";
+  return `${getUrl(imageMap[type] || "/images/credential.png")}`;
 }

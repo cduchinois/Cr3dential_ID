@@ -1,9 +1,6 @@
 import { StaticImageData } from "next/image";
 
-import logo42 from "@/assets/423918.logowik.com.webp";
-import easyALogo from "@/assets/uBaka3Xr_400x400.jpg";
-import futureverseLogo from "@/assets/futureverse.png";
-import xrpLogo from "@/assets/xrp-xrp-logo-CBBF77A5CF-seeklogo.com.webp";
+import { getUrl } from "@/lib/utils";
 
 export const credentialOfferData: {
   [key: string]: {
@@ -22,7 +19,7 @@ export const credentialOfferData: {
       provider: "42",
       location: "Paris, France",
     },
-    image: logo42,
+    image: getUrl("/images/logo-42.webp"),
   },
   "easya-training": {
     issuer: "did:xrp:1:rEABey99Sy7nohSEp9hWxjHMjUDSsBxeXi",
@@ -32,7 +29,7 @@ export const credentialOfferData: {
       provider: "EasyA",
       location: "Paris, France",
     },
-    image: easyALogo,
+    image: getUrl("/images/logo-easya.jpg"),
   },
   "futureverse-training-dev": {
     issuer: "did:xrp:1:rUhRUukKmFk18Tuujc5hiT2iQ6NdBBjo7x",
@@ -42,7 +39,7 @@ export const credentialOfferData: {
       provider: "Futureverse",
       location: "Paris, France",
     },
-    image: futureverseLogo,
+    image: getUrl("/images/logo-futureverse.png"),
   },
   "identity-m": {
     issuer: "did:xrp:1:rHUy4Vuc4J1sgkijpFt8QvWH9kjhksVP7y",
@@ -64,7 +61,7 @@ export const credentialOfferData: {
       passportNumber: "19AF78901",
       issuingCountry: "France",
     },
-    image: "/images/cr3dential.png",
+    image: getUrl("/images/logo-cr3dential.png"),
   },
   "identity-f": {
     issuer: "did:xrp:1:rHUy4Vuc4J1sgkijpFt8QvWH9kjhksVP7y",
@@ -86,7 +83,7 @@ export const credentialOfferData: {
       passportNumber: "20BG45678",
       issuingCountry: "France",
     },
-    image: "/images/cr3dential.png",
+    image: getUrl("/images/logo-cr3dential.png"),
   },
   "xrpl-training": {
     issuer: "did:xrp:1:r4JWSRAf1wSojHg7JEf6H9JT4eJ6tajHui",
@@ -96,7 +93,7 @@ export const credentialOfferData: {
       provider: "XRPL Commons",
       location: "Paris, France",
     },
-    image: xrpLogo,
+    image: getUrl("/images/logo-xrpl.webp"),
   },
   "xrpl-commons-education-week": {
     issuer: "did:xrp:1:r4JWSRAf1wSojHg7JEf6H9JT4eJ6tajHui",
@@ -106,7 +103,7 @@ export const credentialOfferData: {
       provider: "XRPL Commons",
       location: "Paris, France",
     },
-    image: xrpLogo,
+    image: getUrl("/images/logo-xrpl.webp"),
   },
 };
 

@@ -1,5 +1,5 @@
-import clsx, { ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import clsx, { ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /** Merge classes with tailwind-merge with clsx full feature */
 export function cn(...inputs: ClassValue[]) {
@@ -12,7 +12,7 @@ export function shrinkString(
   endMaxLength: number
 ) {
   if (str.length <= beginMaxLength + endMaxLength) return str;
-  return str.slice(0, beginMaxLength) + '...' + str.slice(-endMaxLength);
+  return str.slice(0, beginMaxLength) + "..." + str.slice(-endMaxLength);
 }
 
 export function forAllCombinations<T>(
@@ -42,4 +42,15 @@ export function forAllCombinations<T>(
     result.push(combination.map((i) => array[i]));
   }
   return result;
+}
+
+export function getUrl(path = "") {
+  const baseUrl =
+    process.env.NODE_ENV === "production"
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : "http://localhost:3000";
+
+  const hasLeadingSlash = /^\/(.|\n)*$/.test(baseUrl);
+
+  return `${baseUrl}${hasLeadingSlash ? "" : "/"}${path}`;
 }
