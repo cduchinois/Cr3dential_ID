@@ -92,10 +92,15 @@ export default function CredentialRequestPage() {
         ) as StoredCredential[];
 
         const hasCredential = existingCredentials.some((credential) =>
-          credential.type.some((type) =>
-            type
-              .toLowerCase()
-              .includes(`${data.credentialOffer.type}Credential`.toLowerCase())
+          credential.type.some(
+            (type) =>
+              type
+                .toLowerCase()
+                .includes(
+                  `${data.credentialOffer.type}Credential`.toLowerCase()
+                ) &&
+              credential.credentialSubject.name ===
+                data.credentialOffer.credentialSubject.name
           )
         );
 
