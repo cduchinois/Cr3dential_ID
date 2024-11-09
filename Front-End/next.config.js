@@ -11,10 +11,11 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Uncoment to add domain whitelist
+  // Image domain whitelist
   images: {
     domains: [
       '*',
+      'localhost',
     ],
   },
 

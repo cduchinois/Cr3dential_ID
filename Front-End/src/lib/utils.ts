@@ -50,7 +50,8 @@ export function getUrl(path = "") {
       ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
       : "http://localhost:3000";
 
-  const hasLeadingSlash = /^\/(.|\n)*$/.test(baseUrl);
+  const hasLeadingSlash = path.startsWith("/");
+  const hasTrailingSlash = baseUrl.endsWith("/");
 
-  return `${baseUrl}${hasLeadingSlash ? "" : "/"}${path}`;
+  return `${baseUrl}${hasTrailingSlash || hasLeadingSlash ? "" : "/"}${path}`;
 }
