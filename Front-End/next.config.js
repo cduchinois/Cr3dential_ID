@@ -16,6 +16,7 @@ const nextConfig = {
     domains: [
       '*',
       'localhost',
+      'www.cr3dential.com',
     ],
   },
 

@@ -1,6 +1,7 @@
 import { IProvider } from "@web3auth/base";
-import { convertStringToHex, DIDSet, Payment, xrpToDrops } from "xrpl";
+import { convertStringToHex, Payment, xrpToDrops } from "xrpl";
 import * as xrpl from "xrpl";
+
 import { getCurrentNetwork, getNetworkUrl } from "./networkConfig";
 
 interface SignedTransaction {

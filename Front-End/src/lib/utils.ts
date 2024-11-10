@@ -45,10 +45,19 @@ export function forAllCombinations<T>(
 }
 
 export function getUrl(path = "") {
-  const baseUrl =
-    process.env.NODE_ENV === "production"
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : "https://www.cr3dential.com";
+  let baseUrl = `http://localhost:${process.env.PORT || 3000}`;
+
+  switch (true) {
+    case !!process.env.VERCEL_URL:
+      baseUrl = `https://${process.env.VERCEL_URL}`;
+      break;
+    case !!process.env.NEXT_PUBLIC_VERCEL_URL:
+      baseUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+      break;
+    case !!process.env.VERCEL_PROJECT_PRODUCTION_URL:
+      baseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+      break;
+  }
 
   const hasLeadingSlash = path.startsWith("/");
   const hasTrailingSlash = baseUrl.endsWith("/");
