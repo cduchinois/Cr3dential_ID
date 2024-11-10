@@ -91,11 +91,22 @@ export const credentialOfferData: {
   "xrpl-commons-education-week": {
     type: "training",
     fields: {
-      name: "XRPL Commons Education Week",
+      name: "XRP Ledger Education Week - Building on XRP Ledger",
       provider: "XRPL Commons",
       location: "Paris, France",
+      date: "4-7 November 2024",
     },
-    image: getUrl("/images/logo-xrpl.webp"),
+    image: getUrl("/images/logo-xrpl-commons.jpg"),
+  },
+  "xrpl-commons-unesco-blockchain-for-impact": {
+    type: "training",
+    fields: {
+      name: "Blockchain for Impact - Innovating the Social Economy Hackathon",
+      provider: "XRPL Commons x UNESCO",
+      location: "Paris, France",
+      date: "8-10 November 2024",
+    },
+    image: getUrl("/images/logo-xrpl-commons.jpg"),
   },
 };
 
