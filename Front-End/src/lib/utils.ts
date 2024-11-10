@@ -48,7 +48,7 @@ export function getUrl(path = "") {
   const baseUrl =
     process.env.NODE_ENV === "production"
       ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : "http://localhost:3000";
+      : "https://www.cr3dential.com";
 
   const hasLeadingSlash = path.startsWith("/");
   const hasTrailingSlash = baseUrl.endsWith("/");
