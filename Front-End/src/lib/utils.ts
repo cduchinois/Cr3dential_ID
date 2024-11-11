@@ -48,6 +48,9 @@ export function getUrl(path = "") {
   let baseUrl = `http://localhost:${process.env.PORT || 3000}`;
 
   switch (true) {
+    case !!process.env.APP_URL:
+      baseUrl = `${process.env.APP_URL}`;
+      break;
     case !!process.env.VERCEL_URL:
       baseUrl = `https://${process.env.VERCEL_URL}`;
       break;
