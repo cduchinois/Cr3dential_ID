@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Client, Wallet } from "xrpl";
 
-import { getNetworkUrl } from "@/lib/networkConfig";
+import { getCurrentNetwork, getNetworkUrl } from "@/lib/networkConfig";
 import { getUrl } from "@/lib/utils";
 
 import { credentialOfferData, credentialOfferTypes } from "../credentials";
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { credentialOffer, did, challenge, signature } = body;
+    const { credentialOffer, did, challenge, signature, network } = body;
 
     // Validate required fields
     if (!credentialOffer || !challenge || !signature) {
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create XRPL client and connect
-    client = new Client(getNetworkUrl());
+    client = new Client(getNetworkUrl(network));
     await client.connect();
 
     // Create issuer wallet from private key

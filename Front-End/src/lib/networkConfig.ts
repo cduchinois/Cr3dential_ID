@@ -7,10 +7,13 @@ export const NETWORK_URLS = {
 };
 
 export const DEFAULT_NETWORK: NetworkType =
-  (process.env.XRPL_NETWORK as NetworkType) || "testnet";
+  (process.env.XRPL_DEFAULT_NETWORK as NetworkType) || "testnet";
 
-// Store current network in memory
-let currentNetwork: NetworkType = DEFAULT_NETWORK;
+// Get current network from localStorage or use default
+let currentNetwork: NetworkType =
+  (typeof window !== "undefined" &&
+    (localStorage.getItem("network") as NetworkType)) ||
+  DEFAULT_NETWORK;
 
 export const getCurrentNetwork = (): NetworkType => currentNetwork;
 export const setCurrentNetwork = (network: NetworkType) => {
@@ -18,7 +21,7 @@ export const setCurrentNetwork = (network: NetworkType) => {
 };
 
 export const getNetworkUrl = (
-  network: NetworkType = currentNetwork
+  network: NetworkType = currentNetwork || DEFAULT_NETWORK
 ): string => {
   return NETWORK_URLS[network];
 };

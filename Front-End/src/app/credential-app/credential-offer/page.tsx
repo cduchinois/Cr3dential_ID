@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { getCurrentNetwork } from '@/lib/networkConfig';
 // Add import for XrplRPC
 import XrplRPC from '@/lib/xrpl-rpc';
 import { useWeb3Auth } from '@/hooks/useWeb3Auth';
@@ -150,6 +151,7 @@ export default function CredentialRequestPage() {
           credentialOffer,
           challenge,
           signature,
+          network: getCurrentNetwork(),
         }),
       });
 
@@ -162,7 +164,7 @@ export default function CredentialRequestPage() {
       }
 
       // 2. Fetch current DID Document
-      const didResponse = await fetch(`/api/diddocuments/${did}`);
+      const didResponse = await fetch(`/api/diddocuments/${did}?network=${getCurrentNetwork()}`);
       const didData = await didResponse.json();
 
       if (!didResponse.ok) {

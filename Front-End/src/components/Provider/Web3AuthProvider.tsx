@@ -24,6 +24,7 @@ export const AuthContext = createContext<AuthContextType>({
   createDid: () => {},
   createIssuerDid: () => {},
   getDid: () => {},
+  transferXRP: () => {},
 });
 
 export const Web3AuthProvider = ({
@@ -183,6 +184,40 @@ export const Web3AuthProvider = ({
     return await xrplRPC.getDidFromAccount(address);
   };
 
+  const transferXRP = async (destinationAddress: string, amount: number) => {
+    if (!web3Auth || !provider) {
+      throw new Error('Not connected to wallet');
+    }
+
+    try {
+      const xrplClient = await getXrplClient();
+      const wallet = await getWallet();
+
+      if (!wallet) {
+        throw new Error('Wallet not found');
+      }
+
+      const prepared = await xrplClient.autofill({
+        TransactionType: 'Payment',
+        Account: wallet.address,
+        Amount: xrpl.xrpToDrops(amount.toString()),
+        Destination: destinationAddress
+      });
+
+      const signed = wallet.sign(prepared);
+      const result = await xrplClient.submitAndWait(signed.tx_blob);
+
+      if (result.result.meta?.TransactionResult !== 'tesSUCCESS') {
+        throw new Error('Transaction failed');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Transfer failed:', error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -201,6 +236,7 @@ export const Web3AuthProvider = ({
         createDid,
         createIssuerDid,
         getDid,
+        transferXRP,
       }}
     >
       {children}

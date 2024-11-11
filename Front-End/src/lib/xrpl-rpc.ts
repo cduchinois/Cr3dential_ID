@@ -127,7 +127,7 @@ export default class XrplRPC {
   };
 
   signAndSetDid = async (didUriHex: string): Promise<any> => {
-    console.log("Starting DID creation process...");
+    console.log("Starting signing and setting DID process...");
     try {
       const accounts = await this.provider.request<string[]>({
         method: "xrpl_getAccounts",
@@ -190,37 +190,53 @@ export default class XrplRPC {
           );
         }
 
-        // Wait for validation
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        // Retry verification up to 3 times with increasing delays
+        let attempts = 0;
+        const maxAttempts = 5;
+        let lastError;
 
-        // Verify the transaction
-        try {
-          const txHash = submitResponse.result.tx_json.hash;
-          if (!txHash) {
-            throw new Error("Transaction hash not found");
+        while (attempts < maxAttempts) {
+          try {
+            // Wait with exponential backoff
+            const delay = (attempts > 0 ? 1 : 3) * 1000;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+
+            const txHash = submitResponse.result.tx_json.hash;
+            if (!txHash) {
+              throw new Error("Transaction hash not found");
+            }
+
+            const tx = await client.request({
+              command: "tx",
+              transaction: txHash,
+            });
+
+            console.log("Transaction verified:", tx);
+
+            const explorerUrl = getExplorerUrl(txHash);
+            console.log("Explorer URL:", explorerUrl);
+
+            await client.disconnect();
+            return {
+              success: true,
+              did: didUriHex,
+              transaction: submitResponse,
+              explorerUrl: explorerUrl,
+              txHash: txHash,
+            };
+          } catch (verifyError) {
+            console.log(
+              `Verification attempt ${attempts + 1} failed:`,
+              verifyError
+            );
+            lastError = verifyError;
+            attempts++;
+
+            if (attempts === maxAttempts) {
+              console.error("Max verification attempts reached");
+              throw lastError;
+            }
           }
-
-          const tx = await client.request({
-            command: "tx",
-            transaction: txHash,
-          });
-
-          console.log("Transaction verified:", tx);
-
-          const explorerUrl = getExplorerUrl(txHash);
-          console.log("Explorer URL:", explorerUrl);
-
-          await client.disconnect();
-          return {
-            success: true,
-            did: didUriHex,
-            transaction: submitResponse,
-            explorerUrl: explorerUrl,
-            txHash: txHash,
-          };
-        } catch (verifyError) {
-          console.error("Error verifying transaction:", verifyError);
-          throw verifyError;
         }
       } catch (error) {
         console.error("Error in DID creation:", error);
@@ -252,7 +268,10 @@ export default class XrplRPC {
           response.result.account_objects &&
           response.result.account_objects.length > 0
         ) {
-          console.log("Found DID objects:", response.result.account_objects.length);
+          console.log(
+            "Found DID objects:",
+            response.result.account_objects.length
+          );
 
           // Find the DID object
           const didObject = response.result.account_objects.find(
@@ -264,9 +283,11 @@ export default class XrplRPC {
 
             // Convert hex URI to string if needed
             let didUri = didObject.URI;
-            if (didUri.startsWith('0x') || /^[0-9A-F]+$/i.test(didUri)) {
+            if (didUri.startsWith("0x") || /^[0-9A-F]+$/i.test(didUri)) {
               // Convert hex to string if it's in hex format
-              didUri = Buffer.from(didUri.replace('0x', ''), 'hex').toString('utf8');
+              didUri = Buffer.from(didUri.replace("0x", ""), "hex").toString(
+                "utf8"
+              );
             }
 
             // Format the DID string
@@ -280,7 +301,6 @@ export default class XrplRPC {
         const defaultDid = `did:xrpl:1:${address}`;
         console.log("No DID found, using default format:", defaultDid);
         return defaultDid;
-
       } catch (error) {
         console.error("Error fetching DID:", error);
         return null;
