@@ -122,7 +122,8 @@ export default function ProfilePage() {
                   }}
                 >
                   <Balance />
-                  <TransferXRP />
+                  {/* TODO: Add transfer XRP */}
+                  {/* <TransferXRP /> */}
                 </Box>
               </>
             )}
