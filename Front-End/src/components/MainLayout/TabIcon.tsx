@@ -1,27 +1,50 @@
-import { IconButton, Stack, Typography } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import Link from 'next/link';
 
-function TabIcon({
-  redirectTo,
-  icon,
-  label,
-}: {
+interface TabIconProps {
   redirectTo: string;
   icon: React.ReactNode;
   label: string;
-}) {
+  hideLabel?: boolean;
+  active?: boolean;
+}
+
+function TabIcon({ redirectTo, icon, label, hideLabel = false, active = false }: TabIconProps) {
   return (
-    <Link href={redirectTo}>
-      <IconButton
+    <Link
+      href={redirectTo}
+      style={{
+        textDecoration: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '4px'
+      }}
+    >
+      <Box
         sx={{
-          borderRadius: '10px',
+          height: 56,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          '& svg': {
+            color: active ? '#fff' : '#ccc',
+          }
         }}
       >
-        <Stack direction='column' alignItems='center'>
-          {icon}
-          <Typography variant='caption'>{label}</Typography>
-        </Stack>
-      </IconButton>
+        {icon}
+      </Box>
+      {!hideLabel && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: active ? '#fff' : '#ccc',
+            transition: 'color 0.2s ease'
+          }}
+        >
+          {label}
+        </Typography>
+      )}
     </Link>
   );
 }

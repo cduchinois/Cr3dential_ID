@@ -19,9 +19,12 @@ export const AuthContext = createContext<AuthContextType>({
   setIsLogged: () => {},
   loadingUserInfo: false,
   setLoadingUserInfo: () => {},
+  needsFunding: false,
   login: () => {},
   createDid: () => {},
   createIssuerDid: () => {},
+  getDid: () => {},
+  transferXRP: () => {},
 });
 
 export const Web3AuthProvider = ({
@@ -78,22 +81,22 @@ export const Web3AuthProvider = ({
     try {
       setLoadingUserInfo(true);
       console.log('Starting wallet funding process for:', address);
-      
+
       const fundingResult = await rpc.fundAccount(address);
       console.log('Funding completed:', fundingResult);
-      
+
       if (fundingResult.success) {
         setNeedsFunding(false);
-        
+
         // Wait a bit for the ledger to be updated
         await new Promise(resolve => setTimeout(resolve, 5000));
-        
+
         // Update the wallet with new balance info
         const accountInfo = await rpc.getAccounts();
         setUserWallet({
           address: accountInfo.account,
         });
-        
+
         // Trigger a balance refresh in the UI
         const balanceEvent = new CustomEvent('balanceUpdated');
         window.dispatchEvent(balanceEvent);
@@ -113,15 +116,15 @@ export const Web3AuthProvider = ({
           setLoadingUserInfo(true);
           const newXrplRPC = new XrplRPC(provider);
           setXrplRPC(newXrplRPC);
-          
+
           console.log("Attempting to get accounts...");
           const accounts = await newXrplRPC.getAccounts();
           console.log('Account info:', accounts);
-          
+
           setUserWallet({
             address: accounts.account,
           });
-          
+
           if (accounts.needsFunding) {
             console.log('Account needs funding, initiating funding process...');
             setNeedsFunding(true);
@@ -173,6 +176,48 @@ export const Web3AuthProvider = ({
     return result;
   };
 
+  const getDid = async (address: string) => {
+    if (!xrplRPC) {
+      console.error('xrplRPC not initialized');
+      return null;
+    }
+    return await xrplRPC.getDidFromAccount(address);
+  };
+
+  const transferXRP = async (destinationAddress: string, amount: number) => {
+    if (!web3Auth || !provider) {
+      throw new Error('Not connected to wallet');
+    }
+
+    try {
+      const xrplClient = await getXrplClient();
+      const wallet = await getWallet();
+
+      if (!wallet) {
+        throw new Error('Wallet not found');
+      }
+
+      const prepared = await xrplClient.autofill({
+        TransactionType: 'Payment',
+        Account: wallet.address,
+        Amount: xrpl.xrpToDrops(amount.toString()),
+        Destination: destinationAddress
+      });
+
+      const signed = wallet.sign(prepared);
+      const result = await xrplClient.submitAndWait(signed.tx_blob);
+
+      if (result.result.meta?.TransactionResult !== 'tesSUCCESS') {
+        throw new Error('Transaction failed');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Transfer failed:', error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -190,6 +235,8 @@ export const Web3AuthProvider = ({
         login,
         createDid,
         createIssuerDid,
+        getDid,
+        transferXRP,
       }}
     >
       {children}

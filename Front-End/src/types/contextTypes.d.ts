@@ -20,5 +20,7 @@ declare global {
     createDid: Function;
     createIssuerDid: Function;
     needsFunding: boolean;
+    getDid: Function;
+    transferXRP: Function;
   }
 }

@@ -1,5 +1,5 @@
-import clsx, { ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import clsx, { ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /** Merge classes with tailwind-merge with clsx full feature */
 export function cn(...inputs: ClassValue[]) {
@@ -12,7 +12,7 @@ export function shrinkString(
   endMaxLength: number
 ) {
   if (str.length <= beginMaxLength + endMaxLength) return str;
-  return str.slice(0, beginMaxLength) + '...' + str.slice(-endMaxLength);
+  return str.slice(0, beginMaxLength) + "..." + str.slice(-endMaxLength);
 }
 
 export function forAllCombinations<T>(
@@ -42,4 +42,28 @@ export function forAllCombinations<T>(
     result.push(combination.map((i) => array[i]));
   }
   return result;
+}
+
+export function getUrl(path = "") {
+  let baseUrl = `http://localhost:${process.env.PORT || 3000}`;
+
+  switch (true) {
+    case !!process.env.APP_URL:
+      baseUrl = `${process.env.APP_URL}`;
+      break;
+    case !!process.env.VERCEL_URL:
+      baseUrl = `https://${process.env.VERCEL_URL}`;
+      break;
+    case !!process.env.NEXT_PUBLIC_VERCEL_URL:
+      baseUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+      break;
+    case !!process.env.VERCEL_PROJECT_PRODUCTION_URL:
+      baseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+      break;
+  }
+
+  const hasLeadingSlash = path.startsWith("/");
+  const hasTrailingSlash = baseUrl.endsWith("/");
+
+  return `${baseUrl}${hasTrailingSlash || hasLeadingSlash ? "" : "/"}${path}`;
 }

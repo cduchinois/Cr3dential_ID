@@ -43,7 +43,7 @@ export const defaultCredentials: ICredential[] = [
   {
     id: '1',
     issuer: defaultIssuers[0],
-    name: 'Dev Training',
+    name: 'Futureverse Developer Training',
     img: xrpLogo,
     blockchain: 'XRPL',
     description:
